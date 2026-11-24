@@ -80,6 +80,8 @@ h1, h2, h3 { margin: 0; font-weight: 700; }
 .app-header p { margin: 4px 0 0; color: var(--ink-2); }
 /* 제목 옆 "전체보기" 버튼 자리 */
 .header-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+/* 전체보기·언어 전환 버튼을 header-row 오른쪽 끝으로 밀어 붙임 (제목은 왼쪽 그대로) */
+.header-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; flex-wrap: wrap; }
 
 /* ===== 레이아웃: 왼쪽 패널 + 오른쪽 미리보기 ===== */
 .layout {
@@ -699,12 +701,17 @@ thead .icon-btn:disabled:hover { background: transparent; color: rgba(255, 255, 
 <body>
   <header class="app-header">
     <div class="header-row">
-      <h1>데이터 시각화 툴 by KKA</h1>
-      <!-- 전체보기: 왼쪽 패널의 4개 탭(그래프 종류·데이터 입력·스타일·내보내기)을 한 화면에 쭉 이어서 보여주고,
-           그 자리에서 바로 값을 바꿀 수 있게 합니다. 다시 누르면 원래의 탭(부분) 보기로 돌아갑니다. -->
-      <button type="button" id="toggle-fullview" class="btn btn-ghost btn-small" aria-pressed="false">전체보기</button>
+      <h1 id="app-title">데이터 시각화 툴 by KKA</h1>
+      <div class="header-actions">
+        <!-- 전체보기: 왼쪽 패널의 4개 탭(그래프 종류·데이터 입력·스타일·내보내기)을 한 화면에 쭉 이어서 보여주고,
+             그 자리에서 바로 값을 바꿀 수 있게 합니다. 다시 누르면 원래의 탭(부분) 보기로 돌아갑니다. -->
+        <button type="button" id="toggle-fullview" class="btn btn-ghost btn-small" aria-pressed="false">전체보기</button>
+        <!-- 언어 전환: 화면의 모든 글자(버튼·안내문·그래프 종류 이름 등)를 한국어 ↔ 영어로 바꿉니다.
+             입력한 데이터(항목 이름·숫자·제목 등)는 전혀 건드리지 않습니다. -->
+        <button type="button" id="toggle-lang" class="btn btn-ghost btn-small">English</button>
+      </div>
     </div>
-    <p>표에 데이터를 입력하면 오른쪽에 그래프가 바로 나타납니다.</p>
+    <p id="app-subtitle">표에 데이터를 입력하면 오른쪽에 그래프가 바로 나타납니다.</p>
   </header>
 
   <main class="layout">
@@ -712,7 +719,7 @@ thead .icon-btn:disabled:hover { background: transparent; color: rgba(255, 255, 
     <section class="panel">
       <!-- 탭 사이의 화살표는 "이 순서대로 작업하세요"라는 뜻의 장식입니다 -->
       <!-- 그래프 종류를 먼저 고르면, 그 종류에 맞는 데이터 입력창이 "데이터 입력" 탭에 나타납니다 -->
-      <div class="tabs" role="tablist" aria-label="설정 단계">
+      <div class="tabs" role="tablist" aria-label="설정 단계" id="main-tablist">
         <button type="button" role="tab" class="tab" id="tab-type" aria-controls="pane-type" aria-selected="true">
           그래프 종류
         </button>
@@ -733,7 +740,7 @@ thead .icon-btn:disabled:hover { background: transparent; color: rgba(255, 255, 
       <!-- 탭: 그래프 종류 (먼저 종류를 고르면, 그 종류에 맞는 입력창이 "데이터 입력" 탭에 나타납니다) -->
       <div id="pane-type" role="tabpanel" aria-labelledby="tab-type">
         <!-- "전체보기"에서만 보이는 구역 제목 (평소 탭 보기에서는 탭 이름이 이 역할을 함) -->
-        <h3 class="pane-heading pane-heading-first">그래프 종류</h3>
+        <h3 class="pane-heading pane-heading-first" id="heading-type">그래프 종류</h3>
         <div id="type-groups"></div>
         <p id="type-desc" class="type-desc"></p>
         <div id="type-options"></div>
@@ -741,21 +748,21 @@ thead .icon-btn:disabled:hover { background: transparent; color: rgba(255, 255, 
 
       <!-- 탭: 데이터 입력 -->
       <div id="pane-data" role="tabpanel" aria-labelledby="tab-data" hidden>
-      <h3 class="pane-heading">데이터 입력</h3>
+      <h3 class="pane-heading" id="heading-data">데이터 입력</h3>
       <div class="meta">
         <label class="field">
-          <span>그래프 제목</span>
+          <span id="label-chart-title">그래프 제목</span>
           <input type="text" id="chart-title" placeholder="예: 수신료·광고 수입 추이 (2021–2025)" autocomplete="off">
         </label>
         <label class="field">
-          <span>단위</span>
+          <span id="label-chart-unit">단위</span>
           <input type="text" id="chart-unit" placeholder="예: 억 원" autocomplete="off">
         </label>
       </div>
 
       <!-- 막대·가로막대·누적막대·꺾은선·파이·도넛: 항목+숫자 표 -->
       <div id="standard-data">
-        <div class="toolbar" role="group" aria-label="표 편집">
+        <div class="toolbar" role="group" aria-label="표 편집" id="table-toolbar">
           <button type="button" id="add-row" class="btn">+ 행 추가</button>
           <button type="button" id="add-series" class="btn">+ 열 추가</button>
           <button type="button" id="transpose" class="btn btn-ghost">행·열 바꾸기</button>
@@ -767,7 +774,7 @@ thead .icon-btn:disabled:hover { background: transparent; color: rgba(255, 255, 
           <table id="data-table" aria-label="그래프 데이터 표"></table>
         </div>
 
-        <p class="hint">
+        <p class="hint" id="data-hint">
           첫 번째 열은 항목 이름, 나머지 열은 값입니다. 열 제목을 바꾸면 범례 이름이 바뀝니다.
           숫자만 입력할 수 있고, 비워 두면 그래프에 표시되지 않습니다.
         </p>
@@ -775,7 +782,7 @@ thead .icon-btn:disabled:hover { background: transparent; color: rgba(255, 255, 
         <!-- 텍스트로 붙여넣기 -->
         <div class="paste">
           <h3 id="paste-heading">텍스트로 붙여넣기</h3>
-          <p class="hint">
+          <p class="hint" id="paste-hint">
             엑셀·한글 표를 복사해서 붙여넣거나, 쉼표(,)로 구분해 입력하세요.
             첫 줄이 열 제목이면 자동으로 인식합니다. 붙여넣거나 이 영역에 끌어다 놓으면(텍스트, .csv 파일) 바로 그래프가 만들어집니다.
           </p>
@@ -805,20 +812,20 @@ thead .icon-btn:disabled:hover { background: transparent; color: rgba(255, 255, 
 
       <!-- 탭 3: 스타일 (색상·크기·두께·표시) : 내용은 app.js의 buildStylePane()이 만듭니다 -->
       <div id="pane-style" role="tabpanel" aria-labelledby="tab-style" hidden>
-        <h3 class="pane-heading">스타일</h3>
+        <h3 class="pane-heading" id="heading-style">스타일</h3>
         <div id="style-controls"></div>
       </div>
 
       <!-- 탭 4: 내보내기 (PNG · SVG · PPT) : 내용은 app.js의 buildExportPane()이 만듭니다 -->
       <div id="pane-export" role="tabpanel" aria-labelledby="tab-export" hidden>
-        <h3 class="pane-heading">내보내기</h3>
+        <h3 class="pane-heading" id="heading-export">내보내기</h3>
         <div id="export-controls"></div>
       </div>
     </section>
 
     <!-- 오른쪽: 미리보기 -->
     <section class="preview" aria-labelledby="preview-heading">
-      <h2 id="preview-heading">미리보기 <span class="tag" id="chart-type-tag">막대</span>
+      <h2 id="preview-heading"><span id="preview-heading-text">미리보기</span> <span class="tag" id="chart-type-tag">막대</span>
         <button type="button" class="btn btn-small quick-export" id="quick-export">내보내기</button>
       </h2>
       <div class="chart-box">
@@ -2603,52 +2610,536 @@ window.SVGCanvas=exports;
 (function () {
   'use strict';
 
+  // ---------- 화면 언어 (한국어 ↔ English) ----------
+  // 여기 있는 글자들은 전부 "화면에 보이는 꾸밈 글자"입니다. 사용자가 표에 입력한 데이터
+  // (항목 이름·숫자·그래프 제목 등)는 이 사전과 무관하게 그대로 유지됩니다.
+  var currentLang = 'ko';
+
+  var I18N = {
+    ko: {
+      app_title: '데이터 시각화 툴 by KKA',
+      app_subtitle: '표에 데이터를 입력하면 오른쪽에 그래프가 바로 나타납니다.',
+      tablist_aria: '설정 단계',
+      fullview_on: '전체보기',
+      fullview_off: '부분 보기',
+      lang_switch_to_en: 'English',
+      lang_switch_to_ko: '한국어',
+
+      tab_type: '그래프 종류',
+      tab_data: '데이터 입력',
+      tab_style: '스타일',
+      tab_export: '내보내기',
+
+      field_chart_title: '그래프 제목',
+      placeholder_chart_title: '예: 수신료·광고 수입 추이 (2021–2025)',
+      field_chart_unit: '단위',
+      placeholder_chart_unit: '예: 억 원',
+      table_toolbar_aria: '표 편집',
+      btn_add_row: '+ 행 추가',
+      btn_add_series: '+ 열 추가',
+      btn_transpose: '행·열 바꾸기',
+      btn_load_sample: '예시 데이터',
+      btn_clear_data: '초기화',
+      table_aria: '그래프 데이터 표',
+      data_hint: '첫 번째 열은 항목 이름, 나머지 열은 값입니다. 열 제목을 바꾸면 범례 이름이 바뀝니다. 숫자만 입력할 수 있고, 비워 두면 그래프에 표시되지 않습니다.',
+      paste_heading: '텍스트로 붙여넣기',
+      paste_hint: '엑셀·한글 표를 복사해서 붙여넣거나, 쉼표(,)로 구분해 입력하세요. 첫 줄이 열 제목이면 자동으로 인식합니다. 붙여넣거나 이 영역에 끌어다 놓으면(텍스트, .csv 파일) 바로 그래프가 만들어집니다.',
+      paste_placeholder: '항목, 매출, 비용\n1월, 120, 90\n2월, 150, 100\n3월, 180, 120',
+      btn_apply_paste: '표에 적용',
+      btn_show_as_text: '현재 표를 텍스트로',
+      btn_clear_paste: '지우기',
+      label_preview: '미리보기',
+
+      th_item: '항목',
+      del_series_title: '열 삭제',
+      del_row_title: '행 삭제',
+
+      fallback_item: '항목',
+      fallback_series: '계열',
+      fallback_name_empty: '(이름 없음)',
+      fallback_step: '단계',
+      fallback_outer: '바깥 원',
+      fallback_set_a: '집합 A',
+      fallback_set_b: '집합 B',
+      fallback_center: '중심',
+      fallback_center_circle: '가운데 원',
+      label_total: '합계',
+
+      empty_venn: '집합 이름을 입력하면 벤 다이어그램이 나타납니다.',
+      empty_timeline: '연도(또는 순서)와 설명을 입력하면 타임라인이 나타납니다.',
+      empty_flow: '단계 이름을 입력하면 순서도가 나타납니다.',
+      empty_hub: '가운데 원 이름이나 바깥 원 항목을 입력하면 허브 다이어그램이 나타납니다.',
+      empty_default: '표에 숫자를 입력하면 그래프가 나타납니다.',
+
+      group_compare: '비교',
+      group_trend: '추이',
+      group_ratio: '비율',
+      group_relation: '관계',
+      group_order: '순서',
+      aria_group_suffix: ' 그래프',
+
+      ct_bar_label: '막대', ct_bar_desc: '항목별 크기를 비교할 때 가장 무난합니다.',
+      ct_barh_label: '가로막대', ct_barh_desc: '항목 이름이 길거나 순위를 보여줄 때 좋습니다.',
+      ct_stacked_label: '누적막대', ct_stacked_desc: '전체 크기와 그 안의 구성을 함께 보여줍니다.',
+      ct_line_label: '꺾은선', ct_line_desc: '연도·월별 변화(추이)를 보여줄 때 사용합니다.',
+      ct_area_label: '영역차트', ct_area_desc: '꺾은선 아래를 색으로 채워 추이와 함께 크기(양)도 강조해서 보여줍니다. 계열이 여러 개면 차곡차곡 쌓인 모양(누적)으로 표시되어 전체 합계의 변화도 한눈에 보입니다.',
+      ct_combo_label: '복합차트', ct_combo_desc: '막대와 꺾은선을 한 그래프에 함께 보여줍니다. 계열(열)마다 막대 또는 선을 골라 쓸 수 있어, 매출은 막대로 성장률은 선으로 표시하는 식에 적합합니다. "색상" 목록에서 계열별로 막대/선을 고르세요.',
+      ct_pie_label: '파이', ct_pie_desc: '전체에서 차지하는 비율을 보여줍니다. 열 하나만 그립니다.',
+      ct_doughnut_label: '도넛', ct_doughnut_desc: '파이와 같지만 가운데에 합계를 표시합니다.',
+      ct_treemap_label: '트리맵', ct_treemap_desc: '값의 크기에 비례하는 사각형 블록으로 비율을 보여줍니다. 항목이 많을 때 파이보다 한눈에 보기 좋습니다. 열 하나만 그립니다.',
+      ct_rose_label: '장미차트', ct_rose_desc: '나이팅게일의 장미 차트(콕스콤 차트)처럼 조각을 같은 각도로 나누고, 값이 클수록 반지름을 길게 그려 비율을 보여줍니다. 열 하나만 그립니다.',
+      ct_venn_label: '벤 다이어그램', ct_venn_desc: '두 집합이 겹치는 부분을 보여줍니다(원 1개짜리 단순 버전도 선택 가능). "데이터 입력" 탭에서 원 개수와 집합 이름을 입력하세요. 같은 이름은 겹치는 부분에 표시됩니다.',
+      ct_hub_label: '허브 다이어그램', ct_hub_desc: '가운데 원을 중심으로 바깥 원(1~6개)을 연결선으로 보여줍니다. 조직도·플랫폼 구성도처럼 하나를 중심으로 여러 항목이 연결될 때 적합합니다.',
+      ct_radar_label: '레이더 차트', ct_radar_desc: '여러 항목을 축으로 삼아 계열별 값을 다각형으로 비교합니다. 역량 평가, 제품 간 다면 비교 등에 적합합니다.',
+      ct_timeline_label: '타임라인', ct_timeline_desc: '연도나 순서에 따라 일어난 일을 죽 늘어놓아 보여줍니다.',
+      ct_flow_label: '순서도', ct_flow_desc: '단계를 화살표로 이어 순서나 흐름을 보여줍니다.',
+      ct_funnel_label: '퍼널 차트', ct_funnel_desc: '단계를 거치며 숫자가 줄어드는 과정을 사다리꼴로 보여줍니다. 방문자→가입→결제 같은 전환 과정에 적합합니다. 열 하나만 그립니다(값이 큰 순서로 입력하세요).',
+
+      field_pick_column: '그릴 열',
+      hint_single_default: '음수와 빈 칸은 0으로 처리합니다. 항목이 8개를 넘으면 색이 반복되니 8개 이하로 줄이는 것을 권합니다.',
+      hint_funnel: '음수와 빈 칸은 0으로 처리합니다. 보통 값이 큰 항목부터 작은 항목 순서로 입력합니다(방문자→가입→결제 등).',
+      hint_rose: '음수와 빈 칸은 0으로 처리합니다. 조각은 모두 같은 각도로 나뉘고, 값이 클수록 중심에서 멀리(반지름이 길게) 그려집니다.',
+      hint_structural_fill: '"데이터 입력" 탭에서 이 그래프에 맞는 전용 입력창을 채워 주세요.',
+      hint_combo_pick: '"스타일" 탭의 "색상" 목록에서 계열(열)마다 막대 또는 선을 고를 수 있습니다. 고르지 않으면 마지막 열이 선으로 표시됩니다.',
+      hint_area_stack: '계열(열)이 여러 개면 자동으로 차곡차곡 쌓인 모양(누적)으로 그려집니다. 채우기 진하기는 "스타일" 탭의 "영역차트" 항목에서 조절할 수 있습니다.',
+
+      sec_color: '색상', sec_size: '크기와 글자', sec_thickness: '선·막대·도넛',
+      sec_venn: '벤 다이어그램', sec_timeline: '타임라인', sec_flow: '순서도',
+      sec_hub: '허브 다이어그램', sec_radar: '레이더 차트', sec_treemap: '트리맵',
+      sec_funnel: '퍼널 차트', sec_area: '영역차트', sec_show: '표시',
+
+      theme_brand: '기본 (디자인 지침)',
+      theme_clear: '구분이 잘 되는 색',
+      theme_navy: '네이비 계열',
+      theme_report: '리포트 (네이비·민트, 오렌지 강조)',
+
+      aria_color_theme: '색상 테마',
+      label_series_colors: '열별 색상',
+      btn_reset_colors: '색상 초기화',
+
+      lbl_aspect: '그래프 비율 (가로 : 세로)',
+      lbl_font_scale: '글자 크기',
+      lbl_line_width: '선 두께',
+      lbl_point_radius: '점 크기 (반지름)',
+      lbl_bar_thickness: '막대 최대 두께',
+      hint_bar_thickness: '항목이 많으면 막대가 자동으로 가늘어져, 최대 두께를 키워도 변화가 없을 수 있습니다.',
+      lbl_cutout: '도넛 가운데 구멍',
+      lbl_venn_size: '원 크기',
+      lbl_venn_opacity: '원 투명도',
+      lbl_timeline_line: '가로선 두께',
+      lbl_timeline_dot: '점 크기',
+      lbl_flow_radius: '상자 모서리 둥글기',
+      lbl_flow_arrow: '화살표 두께',
+      lbl_hub_size: '원 크기',
+      lbl_hub_border: '원 테두리·연결선 굵기',
+      lbl_radar_fill: '영역 채우기',
+      lbl_treemap_gap: '블록 사이 간격',
+      lbl_funnel_gap: '단계 사이 간격',
+      lbl_area_opacity: '채우기 진하기',
+
+      lbl_legend_pos: '범례 위치',
+      opt_auto: '자동', opt_top: '위', opt_bottom: '아래', opt_right: '오른쪽', opt_hidden: '숨김',
+      lbl_show_grid: '가로 격자선',
+      lbl_show_last_value: '꺾은선 마지막 값',
+      lbl_show_all_values: '모든 값 표시',
+      lbl_pie_label: '조각 위 글자',
+      opt_pct: '비율(%)', opt_value: '값', opt_both: '비율+값', opt_none: '없음',
+
+      btn_reset_style: '스타일 초기화',
+      hint_reset_style: '색·크기·표시 설정만 처음 상태로 되돌립니다. 입력한 데이터는 바뀌지 않습니다.',
+
+      aria_bar_or_line: '막대 또는 선',
+      btn_bar: '막대',
+      btn_line: '선',
+
+      title_set_colors: '집합별 색상',
+      title_step_colors: '단계별 색상',
+      title_hub_colors: '가운데·바깥 원 색상',
+      title_timeline_colors: '선·점 색상',
+      title_treemap_colors: '블록(항목)별 색상',
+      title_funnel_colors: '단계(항목)별 색상',
+      title_combo_colors: '열(계열)별 색상·모양',
+      title_slice_colors: '조각(항목)별 색상',
+      title_series_colors: '열별 색상',
+      label_timeline_single: '타임라인',
+
+      sec_format: '저장 형식',
+      opt_png: 'PNG', opt_svg: 'SVG', opt_pptx: 'PPT',
+      hint_format_png: '워드·PPT·한글 어디에나 넣을 수 있는 그림 파일입니다. 처음에는 PNG를 권합니다.',
+      hint_format_svg: '선과 글자 정보를 담은 벡터 파일입니다. 워드·PPT에는 넣을 수 있고, 한글은 버전에 따라 열리지 않을 수 있습니다. (글꼴은 컴퓨터에 설치된 글꼴로 대체될 수 있습니다.)',
+      hint_format_pptx: '파워포인트(.pptx) 파일로 저장합니다. 막대·가로막대·누적막대·꺾은선·복합·파이·도넛·레이더는 PPT 안에서 데이터와 색을 직접 다시 고칠 수 있는 "진짜" 차트로 들어가고, 벤 다이어그램·허브 다이어그램·타임라인·순서도·트리맵·퍼널은 원·네모·사다리꼴 같은 "진짜 도형"으로 들어갑니다. 둘 다 그림이 아니라서 PPT 안에서 다시 고칠 수 있습니다.',
+      sec_background: '배경',
+      opt_white: '흰색', opt_transparent: '투명',
+      hint_bg_white: '흰색 바탕에 그려 저장합니다.',
+      hint_bg_transparent: '바탕을 칠하지 않습니다. 색이 있는 슬라이드 위에 올릴 때 좋고, 글자는 검정·네이비라 어두운 배경에서는 잘 안 보입니다. (PPT의 차트·도형 배경에는 적용되지 않고, PNG·SVG로 저장할 때만 적용됩니다.)',
+      sec_size_export: '크기',
+      hint_size_pptx: 'PPT는 1920×1080px(16:9) 슬라이드 1장 크기로 저장됩니다. 스타일 탭의 "그래프 비율"과는 별개입니다.',
+      hint_size_other: '세로 크기는 스타일 탭의 "그래프 비율"에 따라 정해집니다. 저장되는 그림은 지금 미리보기와 같은 모양입니다.',
+      btn_save: '저장하기',
+
+      msg_no_data: '그래프에 표시할 숫자가 없어 저장할 수 없습니다. 데이터를 먼저 입력해 주세요.',
+      msg_no_svg_lib: 'SVG 저장에 필요한 lib/svgcanvas.js를 찾지 못했습니다.',
+      msg_no_pptx_lib: 'PPT 저장에 필요한 lib/pptxgenjs.bundle.js를 찾지 못했습니다.',
+      msg_save_cancelled: '저장을 취소했습니다.',
+      msg_unknown_error: '알 수 없는 오류',
+
+      aria_venn_shape: '벤 다이어그램 모양',
+      btn_two_circles: '원 2개 (교집합)',
+      btn_one_circle: '원 1개',
+      label_set_a_name: '집합 A 이름',
+      label_set_b_name: '집합 B 이름',
+      label_set_a_items: '집합 A 항목 (한 줄에 하나씩)',
+      label_set_b_items: '집합 B 항목 (한 줄에 하나씩)',
+      label_name_only: '이름',
+      label_items_only: '항목 (한 줄에 하나씩)',
+      hint_venn_one: '입력한 이름과 항목이 원 안에 가운데 정렬로 표시됩니다.',
+      hint_venn_two: '두 목록에 같은 이름이 있으면 겹치는 부분(교집합)에 표시됩니다.',
+      aria_venn_edit: '벤 다이어그램 편집',
+      placeholder_venn_items_a: '철수\n민수\n지훈',
+      placeholder_venn_items_b: '영희\n지은\n수아',
+
+      hint_timeline: '빈 줄로 구간을 나눕니다. 각 구간의 첫 줄은 연도(또는 순서), 그 아래 줄들은 설명입니다.',
+      label_timeline_content: '연표 내용',
+      aria_timeline_edit: '타임라인 편집',
+      placeholder_timeline: '1914\n프란츠 페르디난트 대공이 암살당했다.\n\n1915\n영국에 첫 체펠린 비행선 공습이 있었다.',
+
+      hint_flow: '한 줄에 한 단계씩 입력하세요. 화살표로 순서대로 이어 보여줍니다.',
+      label_flow_steps: '단계 목록',
+      aria_flow_edit: '순서도 편집',
+      placeholder_flow: '요구사항 정리\n설계\n개발\n테스트\n배포',
+
+      label_hub_center_title: '가운데 원 이름',
+      label_hub_center_sub: '가운데 원 부제 (선택)',
+      label_hub_items: '바깥 원 항목 (한 줄에 하나씩)',
+      aria_hub_edit: '허브 다이어그램 편집',
+      placeholder_hub_items: 'KBS+\nKONG\n뉴스\n지역\n재난\n아카이브',
+
+      err_no_paste: '붙여넣은 내용이 없습니다.',
+      err_header_only: '열 제목만 있고 데이터 줄이 없습니다.',
+      err_xlsx_unsupported: '엑셀 파일(.xlsx)은 아직 지원하지 않습니다. 표를 복사해서 붙여넣거나 CSV로 저장해서 올려 주세요.',
+      msg_show_as_text: '현재 표 내용을 탭으로 구분해 채웠습니다. 엑셀에 그대로 붙여넣을 수 있습니다.',
+
+      default_filename: '그래프'
+    },
+    en: {
+      app_title: 'Data Visualization Tool by KKA',
+      app_subtitle: 'Enter data in the table and the chart appears on the right instantly.',
+      tablist_aria: 'Setup steps',
+      fullview_on: 'Full view',
+      fullview_off: 'Tabbed view',
+      lang_switch_to_en: 'English',
+      lang_switch_to_ko: '한국어',
+
+      tab_type: 'Chart type',
+      tab_data: 'Data input',
+      tab_style: 'Style',
+      tab_export: 'Export',
+
+      field_chart_title: 'Chart title',
+      placeholder_chart_title: 'e.g. License fee & ad revenue trend (2021–2025)',
+      field_chart_unit: 'Unit',
+      placeholder_chart_unit: 'e.g. $1,000s',
+      table_toolbar_aria: 'Edit table',
+      btn_add_row: '+ Add row',
+      btn_add_series: '+ Add column',
+      btn_transpose: 'Swap rows/columns',
+      btn_load_sample: 'Sample data',
+      btn_clear_data: 'Reset',
+      table_aria: 'Chart data table',
+      data_hint: 'The first column is the item name; the rest are values. Changing a column title changes its legend name. Only numbers can be entered — leaving a cell blank hides it from the chart.',
+      paste_heading: 'Paste as text',
+      paste_hint: 'Copy a table from Excel or Hangul (HWP) and paste it, or type values separated by commas. If the first line looks like column titles, it is detected automatically. Pasting or dropping a file here (text or .csv) builds the chart right away.',
+      paste_placeholder: 'Item, Sales, Cost\nJan, 120, 90\nFeb, 150, 100\nMar, 180, 120',
+      btn_apply_paste: 'Apply to table',
+      btn_show_as_text: 'Show table as text',
+      btn_clear_paste: 'Clear',
+      label_preview: 'Preview',
+
+      th_item: 'Item',
+      del_series_title: 'Delete column',
+      del_row_title: 'Delete row',
+
+      fallback_item: 'Item',
+      fallback_series: 'Series',
+      fallback_name_empty: '(No name)',
+      fallback_step: 'Step',
+      fallback_outer: 'Outer circle',
+      fallback_set_a: 'Set A',
+      fallback_set_b: 'Set B',
+      fallback_center: 'Center',
+      fallback_center_circle: 'Center circle',
+      label_total: 'Total',
+
+      empty_venn: 'Enter set names to see the Venn diagram.',
+      empty_timeline: 'Enter a year (or order) and description to see the timeline.',
+      empty_flow: 'Enter step names to see the flowchart.',
+      empty_hub: 'Enter the center name or outer items to see the hub diagram.',
+      empty_default: 'Enter numbers in the table to see the chart.',
+
+      group_compare: 'Comparison',
+      group_trend: 'Trend',
+      group_ratio: 'Ratio',
+      group_relation: 'Relationship',
+      group_order: 'Sequence',
+      aria_group_suffix: ' charts',
+
+      ct_bar_label: 'Bar', ct_bar_desc: 'A solid default for comparing size across items.',
+      ct_barh_label: 'Horizontal bar', ct_barh_desc: 'Good when item names are long or you want to show ranking.',
+      ct_stacked_label: 'Stacked bar', ct_stacked_desc: 'Shows the total size together with its internal composition.',
+      ct_line_label: 'Line', ct_line_desc: 'Use this to show change over time, by year or month.',
+      ct_area_label: 'Area', ct_area_desc: 'Fills the area under the line to emphasize both the trend and the amount. With multiple series, they stack on top of each other so the total change is easy to see too.',
+      ct_combo_label: 'Combo', ct_combo_desc: 'Shows bars and a line together in one chart. You can choose bar or line for each column — e.g. sales as bars and growth rate as a line. Pick bar/line per column in the "Color" list.',
+      ct_pie_label: 'Pie', ct_pie_desc: "Shows each item's share of the whole. Draws only one column.",
+      ct_doughnut_label: 'Doughnut', ct_doughnut_desc: 'Same as pie, but shows the total in the center.',
+      ct_treemap_label: 'Treemap', ct_treemap_desc: 'Shows proportions as rectangular blocks sized to each value. Easier to scan than a pie chart when there are many items. Draws only one column.',
+      ct_rose_label: 'Rose chart', ct_rose_desc: "Like Florence Nightingale's rose chart (coxcomb chart): slices are divided into equal angles, and larger values get a longer radius. Draws only one column.",
+      ct_venn_label: 'Venn diagram', ct_venn_desc: 'Shows where two sets overlap (a simple one-circle version is also available). Enter the number of circles and set names in the "Data input" tab. Matching names are shown in the overlapping area.',
+      ct_hub_label: 'Hub diagram', ct_hub_desc: 'Shows outer circles (1–6) connected to a center circle by lines. Good for org charts or platform diagrams where several items connect to one hub.',
+      ct_radar_label: 'Radar chart', ct_radar_desc: 'Compares series as polygons across several items used as axes. Good for skill assessments or multi-dimensional product comparisons.',
+      ct_timeline_label: 'Timeline', ct_timeline_desc: 'Lays out events in order by year or sequence.',
+      ct_flow_label: 'Flowchart', ct_flow_desc: 'Connects steps with arrows to show order or flow.',
+      ct_funnel_label: 'Funnel chart', ct_funnel_desc: 'Shows numbers narrowing through stages as trapezoids. Good for conversion flows like visitors→signups→payments. Draws only one column (enter values from largest to smallest).',
+
+      field_pick_column: 'Column to draw',
+      hint_single_default: "Negative numbers and blanks are treated as 0. Colors repeat past 8 items, so it's best to keep it to 8 or fewer.",
+      hint_funnel: 'Negative numbers and blanks are treated as 0. Usually entered from the largest value to the smallest (e.g. visitors→signups→payments).',
+      hint_rose: 'Negative numbers and blanks are treated as 0. Every slice gets an equal angle, and larger values extend farther from the center (a longer radius).',
+      hint_structural_fill: 'Fill in the dedicated input fields for this chart in the "Data input" tab.',
+      hint_combo_pick: 'In the "Style" tab\'s "Color" list, you can choose bar or line for each column. If you don\'t choose, the last column is shown as a line.',
+      hint_area_stack: 'With multiple columns, they automatically stack on top of each other. Fill opacity can be adjusted in the "Area chart" section of the "Style" tab.',
+
+      sec_color: 'Color', sec_size: 'Size & text', sec_thickness: 'Lines, bars & doughnut',
+      sec_venn: 'Venn diagram', sec_timeline: 'Timeline', sec_flow: 'Flowchart',
+      sec_hub: 'Hub diagram', sec_radar: 'Radar chart', sec_treemap: 'Treemap',
+      sec_funnel: 'Funnel chart', sec_area: 'Area chart', sec_show: 'Display',
+
+      theme_brand: 'Default (design guide)',
+      theme_clear: 'High-contrast colors',
+      theme_navy: 'Navy tones',
+      theme_report: 'Report (navy & mint, orange accent)',
+
+      aria_color_theme: 'Color theme',
+      label_series_colors: 'Column colors',
+      btn_reset_colors: 'Reset colors',
+
+      lbl_aspect: 'Chart ratio (width : height)',
+      lbl_font_scale: 'Text size',
+      lbl_line_width: 'Line thickness',
+      lbl_point_radius: 'Point size (radius)',
+      lbl_bar_thickness: 'Max bar thickness',
+      hint_bar_thickness: 'With many items, bars thin out automatically, so increasing the max thickness may have no visible effect.',
+      lbl_cutout: 'Doughnut hole size',
+      lbl_venn_size: 'Circle size',
+      lbl_venn_opacity: 'Circle transparency',
+      lbl_timeline_line: 'Line thickness',
+      lbl_timeline_dot: 'Dot size',
+      lbl_flow_radius: 'Box corner rounding',
+      lbl_flow_arrow: 'Arrow thickness',
+      lbl_hub_size: 'Circle size',
+      lbl_hub_border: 'Circle border & line thickness',
+      lbl_radar_fill: 'Fill area',
+      lbl_treemap_gap: 'Gap between blocks',
+      lbl_funnel_gap: 'Gap between stages',
+      lbl_area_opacity: 'Fill opacity',
+
+      lbl_legend_pos: 'Legend position',
+      opt_auto: 'Auto', opt_top: 'Top', opt_bottom: 'Bottom', opt_right: 'Right', opt_hidden: 'Hidden',
+      lbl_show_grid: 'Horizontal gridlines',
+      lbl_show_last_value: 'Last value on line',
+      lbl_show_all_values: 'Show all values',
+      lbl_pie_label: 'Text on slices',
+      opt_pct: 'Percent (%)', opt_value: 'Value', opt_both: 'Percent + value', opt_none: 'None',
+
+      btn_reset_style: 'Reset style',
+      hint_reset_style: 'Resets only color, size and display settings back to default. Your entered data is not changed.',
+
+      aria_bar_or_line: 'Bar or line',
+      btn_bar: 'Bar',
+      btn_line: 'Line',
+
+      title_set_colors: 'Colors by set',
+      title_step_colors: 'Colors by stage',
+      title_hub_colors: 'Center & outer circle colors',
+      title_timeline_colors: 'Line & dot color',
+      title_treemap_colors: 'Colors by block (item)',
+      title_funnel_colors: 'Colors by stage (item)',
+      title_combo_colors: 'Color & shape by column',
+      title_slice_colors: 'Colors by slice (item)',
+      title_series_colors: 'Column colors',
+      label_timeline_single: 'Timeline',
+
+      sec_format: 'File format',
+      opt_png: 'PNG', opt_svg: 'SVG', opt_pptx: 'PPT',
+      hint_format_png: 'An image file that works in Word, PowerPoint, or Hangul (HWP). PNG is recommended to start with.',
+      hint_format_svg: 'A vector file that stores line and text information. Works in Word and PowerPoint; Hangul (HWP) may not open it depending on the version. (Fonts may be substituted with ones installed on the opening computer.)',
+      hint_format_pptx: 'Saves a PowerPoint (.pptx) file. Bar, horizontal bar, stacked bar, line, combo, pie, doughnut, and radar go in as "real" charts whose data and colors you can re-edit directly in PowerPoint. Venn diagram, hub diagram, timeline, flowchart, treemap, and funnel go in as "real shapes" — circles, rectangles, trapezoids and so on. Neither is a picture, so both can be edited again inside PowerPoint.',
+      sec_background: 'Background',
+      opt_white: 'White', opt_transparent: 'Transparent',
+      hint_bg_white: 'Saves the chart drawn on a white background.',
+      hint_bg_transparent: 'Leaves the background unpainted. Good for placing on a colored slide; text is black/navy, so it may be hard to read on a dark background. (Does not apply to chart/shape backgrounds in PPT — only to PNG/SVG exports.)',
+      sec_size_export: 'Size',
+      hint_size_pptx: 'PPT is saved as a single 1920×1080px (16:9) slide. This is independent of the "Chart ratio" in the Style tab.',
+      hint_size_other: 'Height is determined by the "Chart ratio" in the Style tab. The saved image matches what you see in the preview now.',
+      btn_save: 'Save',
+
+      msg_no_data: "There is no data to show in the chart, so it can't be saved. Please enter data first.",
+      msg_no_svg_lib: 'Could not find lib/svgcanvas.js, which is needed to save as SVG.',
+      msg_no_pptx_lib: 'Could not find lib/pptxgenjs.bundle.js, which is needed to save as PPT.',
+      msg_save_cancelled: 'Save cancelled.',
+      msg_unknown_error: 'unknown error',
+
+      aria_venn_shape: 'Venn diagram shape',
+      btn_two_circles: '2 circles (overlap)',
+      btn_one_circle: '1 circle',
+      label_set_a_name: 'Set A name',
+      label_set_b_name: 'Set B name',
+      label_set_a_items: 'Set A items (one per line)',
+      label_set_b_items: 'Set B items (one per line)',
+      label_name_only: 'Name',
+      label_items_only: 'Items (one per line)',
+      hint_venn_one: 'The entered name and items are shown centered inside the circle.',
+      hint_venn_two: 'A name that appears in both lists is shown in the overlapping area.',
+      aria_venn_edit: 'Edit Venn diagram',
+      placeholder_venn_items_a: 'Alice\nBob\nCarol',
+      placeholder_venn_items_b: 'Dave\nEmma\nFinn',
+
+      hint_timeline: 'Blank lines separate entries. The first line of each entry is the year (or order), and the lines below are the description.',
+      label_timeline_content: 'Timeline content',
+      aria_timeline_edit: 'Edit timeline',
+      placeholder_timeline: '1914\nArchduke Franz Ferdinand was assassinated.\n\n1915\nThe first Zeppelin raid on Britain took place.',
+
+      hint_flow: 'Enter one step per line. They are connected in order with arrows.',
+      label_flow_steps: 'Step list',
+      aria_flow_edit: 'Edit flowchart',
+      placeholder_flow: 'Requirements\nDesign\nDevelopment\nTesting\nDeployment',
+
+      label_hub_center_title: 'Center circle name',
+      label_hub_center_sub: 'Center circle subtitle (optional)',
+      label_hub_items: 'Outer circle items (one per line)',
+      aria_hub_edit: 'Edit hub diagram',
+      placeholder_hub_items: 'KBS+\nKONG\nNews\nRegional\nDisaster\nArchive',
+
+      err_no_paste: 'Nothing was pasted.',
+      err_header_only: 'Only column titles were found — no data rows.',
+      err_xlsx_unsupported: 'Excel files (.xlsx) are not supported yet. Please copy and paste the table, or save it as CSV and drop that in.',
+      msg_show_as_text: 'Filled in the current table as tab-separated text. You can paste it straight into Excel.',
+
+      default_filename: 'chart'
+    }
+  };
+
+  // 사전에서 글자를 찾아 반환 (currentLang에 없으면 한국어로, 그것도 없으면 key 그대로)
+  function t(key) {
+    var d = I18N[currentLang] || I18N.ko;
+    if (d[key] != null) return d[key];
+    if (I18N.ko[key] != null) return I18N.ko[key];
+    return key;
+  }
+
+  // 표 머리글/칸 번호가 들어간 aria-label·title 문구 (예: "3번째 열 삭제" / "Delete column 3")
+  function ordinalAria(n, kind, action) {
+    if (currentLang === 'en') {
+      if (kind === 'col' && action === 'del') return 'Delete column ' + n;
+      if (kind === 'col' && action === 'title') return 'Column ' + n + ' title';
+      if (kind === 'row' && action === 'del') return 'Delete row ' + n;
+      if (kind === 'row' && action === 'name') return 'Row ' + n + ' item name';
+      return '';
+    }
+    if (kind === 'col' && action === 'del') return n + '번째 열 삭제';
+    if (kind === 'col' && action === 'title') return n + '번째 열 제목';
+    if (kind === 'row' && action === 'del') return n + '번째 행 삭제';
+    if (kind === 'row' && action === 'name') return n + '번째 행 항목 이름';
+    return '';
+  }
+
+  // 단위 표기: '(단위: 억 원)' / '(Unit: $1,000s)'
+  function unitLabel(unit) {
+    return currentLang === 'en' ? '(Unit: ' + unit + ')' : '(단위: ' + unit + ')';
+  }
+  // 목록이 다 안 보일 때 "+N개 더" / "+N more"
+  function overflowMore(n) {
+    return currentLang === 'en' ? '+' + n + ' more' : '+' + n + '개 더';
+  }
+
+  // CHART_TYPES의 group 값(한국어 고정 문자열)을 화면 표시용 글자로 바꿔 줌
+  var GROUP_KEYS = { '비교': 'compare', '추이': 'trend', '비율': 'ratio', '관계': 'relation', '순서': 'order' };
+  function groupLabel(g) { return t('group_' + GROUP_KEYS[g]); }
+  // 그래프 종류 id → 화면 표시용 이름/설명 (CHART_TYPES의 id는 그대로 두고, 글자만 사전에서 찾음)
+  function ctLabel(id) { return t('ct_' + id + '_label'); }
+  function ctDesc(id) { return t('ct_' + id + '_desc'); }
+
   var MAX_ROWS = 30;
   var MAX_SERIES = 8; // 색상 팔레트 개수
 
   // ---------- 데이터 상태 ----------
   // labels: 항목 이름 배열, series: [{ name, values: [문자열...] }]
   // 값은 문자열로 보관합니다 (입력 중인 "1." 같은 값을 지우지 않기 위해).
-  var SAMPLE = {
+  // 예시 데이터는 화면 언어에 맞춰 두 가지(한국어/영어)로 준비해 둡니다.
+  var SAMPLE_KO = {
     labels: ['1월', '2월', '3월', '4월', '5월', '6월'],
     series: [
       { name: '매출', values: ['120', '150', '180', '160', '210', '240'] },
       { name: '비용', values: ['90', '100', '120', '130', '150', '160'] }
     ]
   };
+  var SAMPLE_EN = {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    series: [
+      { name: 'Sales', values: ['120', '150', '180', '160', '210', '240'] },
+      { name: 'Cost', values: ['90', '100', '120', '130', '150', '160'] }
+    ]
+  };
+  function sampleData() { return currentLang === 'en' ? SAMPLE_EN : SAMPLE_KO; }
 
   function blankState() {
+    var item = t('fallback_item'), series = t('fallback_series');
     return {
-      labels: ['항목 1', '항목 2', '항목 3'],
-      series: [{ name: '계열 1', values: ['', '', ''] }]
+      labels: [item + ' 1', item + ' 2', item + ' 3'],
+      series: [{ name: series + ' 1', values: ['', '', ''] }]
     };
   }
 
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
 
-  var state = clone(SAMPLE);
+  var state = clone(sampleData());
+  // 표 내용이 아직 예시 데이터 그대로인지(한 번도 직접 고치지 않았는지) 표시합니다.
+  // true일 때만 언어를 바꾸면 그 언어의 예시 데이터로 다시 채웁니다. 사용자가 한 글자라도
+  // 고치거나 지우거나 붙여넣으면 false가 되어, 그 뒤로는 언어를 바꿔도 데이터를 건드리지 않습니다.
+  var dataIsSample = true;
 
   // 그래프 제목·단위 (예시 데이터일 때만 예시 값을 채워 둠)
-  var SAMPLE_TITLE = '월별 매출·비용 추이 (예시)';
-  var SAMPLE_UNIT = '억 원';
-  var chartTitle = SAMPLE_TITLE;
-  var chartUnit = SAMPLE_UNIT;
+  var SAMPLE_TITLE_KO = '월별 매출·비용 추이 (예시)';
+  var SAMPLE_UNIT_KO = '억 원';
+  var SAMPLE_TITLE_EN = 'Monthly sales & cost trend (sample)';
+  var SAMPLE_UNIT_EN = '$1,000s';
+  function sampleTitle() { return currentLang === 'en' ? SAMPLE_TITLE_EN : SAMPLE_TITLE_KO; }
+  function sampleUnit() { return currentLang === 'en' ? SAMPLE_UNIT_EN : SAMPLE_UNIT_KO; }
+  var chartTitle = sampleTitle();
+  var chartUnit = sampleUnit();
   var metaIsSample = true;
 
   // ---------- 새 데이터 상태 (벤 다이어그램 · 타임라인 · 순서도) ----------
   // 표(state)와는 별개로 각자 자신의 데이터를 가집니다. 그래프 종류를 바꿔도
   // 서로의 데이터는 지워지지 않습니다.
   // mode: 'two'(원 2개, 교집합 비교 - 기본) / 'one'(원 1개, 안에 이름+항목 글자만 표시)
-  var SAMPLE_VENN = {
+  var SAMPLE_VENN_KO = {
     mode: 'two',
     nameA: '테니스 동아리', nameB: '럭비 동아리',
     itemsA: ['철수', '민수', '지훈', '서연', '우진', '하은'],
     itemsB: ['영희', '지은', '수아', '다은', '우진', '하은']
   };
-  var BLANK_VENN = { mode: 'two', nameA: '집합 A', nameB: '집합 B', itemsA: [], itemsB: [] };
-  var vennState = clone(SAMPLE_VENN);
+  var SAMPLE_VENN_EN = {
+    mode: 'two',
+    nameA: 'Tennis Club', nameB: 'Rugby Club',
+    itemsA: ['Chris', 'Min', 'Jihoon', 'Seoyeon', 'Woojin', 'Haeun'],
+    itemsB: ['Younghee', 'Jieun', 'Sooah', 'Daeun', 'Woojin', 'Haeun']
+  };
+  function sampleVenn() { return currentLang === 'en' ? SAMPLE_VENN_EN : SAMPLE_VENN_KO; }
+  function blankVenn() { return { mode: 'two', nameA: t('fallback_set_a'), nameB: t('fallback_set_b'), itemsA: [], itemsB: [] }; }
+  var vennState = clone(sampleVenn());
+  var vennIsSample = true; // 예시 데이터 그대로인지 (dataIsSample과 같은 용도)
 
-  var SAMPLE_TIMELINE = {
+  var SAMPLE_TIMELINE_KO = {
     events: [
       { label: '1914', text: ['프란츠 페르디난트 대공이 암살당했다.', '독일이 프랑스에 전쟁을 선포했다.'] },
       { label: '1915', text: ['영국에 첫 체펠린 비행선 공습이 있었다.'] },
@@ -2658,21 +3149,43 @@ window.SVGCanvas=exports;
       { label: '1919', text: ['베르사유 조약이 체결됐다.'] }
     ]
   };
+  var SAMPLE_TIMELINE_EN = {
+    events: [
+      { label: '1914', text: ['Archduke Franz Ferdinand was assassinated.', 'Germany declared war on France.'] },
+      { label: '1915', text: ['The first Zeppelin raid on Britain took place.'] },
+      { label: '1916', text: ['The Battle of Gallipoli ended in Allied defeat.'] },
+      { label: '1917', text: ['Russia signed an armistice with Germany.'] },
+      { label: '1918', text: ['Woodrow Wilson announced the Fourteen Points.'] },
+      { label: '1919', text: ['The Treaty of Versailles was signed.'] }
+    ]
+  };
+  function sampleTimeline() { return currentLang === 'en' ? SAMPLE_TIMELINE_EN : SAMPLE_TIMELINE_KO; }
   var BLANK_TIMELINE = { events: [] };
-  var timelineState = clone(SAMPLE_TIMELINE);
+  var timelineState = clone(sampleTimeline());
+  var timelineIsSample = true;
 
-  var SAMPLE_FLOW = { steps: ['요구사항 정리', '설계', '개발', '테스트', '배포'] };
+  var SAMPLE_FLOW_KO = { steps: ['요구사항 정리', '설계', '개발', '테스트', '배포'] };
+  var SAMPLE_FLOW_EN = { steps: ['Requirements', 'Design', 'Development', 'Testing', 'Deployment'] };
+  function sampleFlow() { return currentLang === 'en' ? SAMPLE_FLOW_EN : SAMPLE_FLOW_KO; }
   var BLANK_FLOW = { steps: [] };
-  var flowState = clone(SAMPLE_FLOW);
+  var flowState = clone(sampleFlow());
+  var flowIsSample = true;
 
   // 허브 다이어그램: 가운데 원 1개 + 바깥 원(최대 6개), 연결선으로 표시
-  var SAMPLE_HUB = {
+  var SAMPLE_HUB_KO = {
     centerTitle: 'ONEPLAY',
     centerSub: '하나의 KBS',
     items: ['KBS+', 'KONG', '뉴스', '지역', '재난', '아카이브']
   };
-  var BLANK_HUB = { centerTitle: '중심', centerSub: '', items: [] };
-  var hubState = clone(SAMPLE_HUB);
+  var SAMPLE_HUB_EN = {
+    centerTitle: 'ONEPLAY',
+    centerSub: 'One KBS',
+    items: ['KBS+', 'KONG', 'News', 'Regional', 'Disaster', 'Archive']
+  };
+  function sampleHub() { return currentLang === 'en' ? SAMPLE_HUB_EN : SAMPLE_HUB_KO; }
+  function blankHub() { return { centerTitle: t('fallback_center'), centerSub: '', items: [] }; }
+  var hubState = clone(sampleHub());
+  var hubIsSample = true;
 
   // ---------- 요소 ----------
   var table = document.getElementById('data-table');
@@ -2807,7 +3320,7 @@ window.SVGCanvas=exports;
     // 머리글: 항목 | 계열 이름들
     var headRow = el('tr');
     headRow.appendChild(el('th', { scope: 'col' }, [
-      el('div', { class: 'th-inner' }, [el('span', { text: '항목' })])
+      el('div', { class: 'th-inner' }, [el('span', { text: t('th_item') })])
     ]));
     // 첫 번째 머리글은 고정 텍스트라 입력이 아님
     headRow.firstChild.firstChild.firstChild.style.fontWeight = '600';
@@ -2821,15 +3334,15 @@ window.SVGCanvas=exports;
         class: 'icon-btn',
         'data-action': 'del-series',
         'data-c': c,
-        'aria-label': (c + 1) + '번째 열 삭제',
-        title: '열 삭제',
+        'aria-label': ordinalAria(c + 1, 'col', 'del'),
+        title: t('del_series_title'),
         text: '×'
       });
       if (state.series.length <= 1) del.disabled = true;
       headRow.appendChild(el('th', { scope: 'col' }, [
         el('div', { class: 'th-inner' }, [
           swatch,
-          makeInput(s.name, 'series-name', 0, c, (c + 1) + '번째 열 제목'),
+          makeInput(s.name, 'series-name', 0, c, ordinalAria(c + 1, 'col', 'title')),
           del
         ])
       ]));
@@ -2845,15 +3358,15 @@ window.SVGCanvas=exports;
         class: 'icon-btn',
         'data-action': 'del-row',
         'data-r': r,
-        'aria-label': (r + 1) + '번째 행 삭제',
-        title: '행 삭제',
+        'aria-label': ordinalAria(r + 1, 'row', 'del'),
+        title: t('del_row_title'),
         text: '×'
       });
       if (state.labels.length <= 1) del.disabled = true;
 
       tr.appendChild(el('td', null, [
         el('div', { class: 'th-inner plain' }, [
-          makeInput(label, 'label', r, 0, (r + 1) + '번째 행 항목 이름'),
+          makeInput(label, 'label', r, 0, ordinalAria(r + 1, 'row', 'name')),
           del
         ])
       ]));
@@ -3007,11 +3520,11 @@ window.SVGCanvas=exports;
 
   // 그래프 종류에 맞는 "표시할 내용이 없습니다" 안내 문구
   function emptyText() {
-    if (chartType === 'venn') return '집합 이름을 입력하면 벤 다이어그램이 나타납니다.';
-    if (chartType === 'timeline') return '연도(또는 순서)와 설명을 입력하면 타임라인이 나타납니다.';
-    if (chartType === 'flow') return '단계 이름을 입력하면 순서도가 나타납니다.';
-    if (chartType === 'hub') return '가운데 원 이름이나 바깥 원 항목을 입력하면 허브 다이어그램이 나타납니다.';
-    return '표에 숫자를 입력하면 그래프가 나타납니다.';
+    if (chartType === 'venn') return t('empty_venn');
+    if (chartType === 'timeline') return t('empty_timeline');
+    if (chartType === 'flow') return t('empty_flow');
+    if (chartType === 'hub') return t('empty_hub');
+    return t('empty_default');
   }
   function syncEmpty() {
     emptyMsg.textContent = emptyText();
@@ -3038,7 +3551,7 @@ window.SVGCanvas=exports;
     return state.series.map(function (s, i) {
       var color = seriesColor(i);
       var base = {
-        label: s.name || '(이름 없음)',
+        label: s.name || t('fallback_name_empty'),
         data: s.values.map(parseValue)
       };
       if (isLineSeries(s, i)) {
@@ -3102,7 +3615,7 @@ window.SVGCanvas=exports;
     var family = Chart.defaults.font.family;
     var w = canvas.clientWidth || 640;
     var titleW = textWidth(title, '700 ' + fs(18) + 'px ' + family);
-    var unitW = textWidth('(단위: ' + unit + ')', '400 ' + fs(12) + 'px ' + family);
+    var unitW = textWidth(unitLabel(unit), '400 ' + fs(12) + 'px ' + family);
     var titleLeft = (w - titleW) / 2;
     if (64 + unitW + 12 <= titleLeft) return 'title';
     return legendRowAvailable ? 'legend' : 'below';
@@ -3194,7 +3707,7 @@ window.SVGCanvas=exports;
       tooltip.callbacks.footer = function (items) {
         var sum = 0;
         items.forEach(function (it) { if (it.parsed.y !== null) sum += it.parsed.y; });
-        return '합계: ' + fmt(sum);
+        return t('label_total') + ': ' + fmt(sum);
       };
     }
 
@@ -3276,7 +3789,7 @@ window.SVGCanvas=exports;
       // 장미차트는 Chart.js의 네이티브 'polarArea'(같은 각도로 나눈 조각의 반지름이 값에 비례) 타입을 씁니다.
       type: chartType === 'rose' ? 'polarArea' : chartType,
       data: {
-        labels: state.labels.map(function (l, i) { return l !== '' ? l : '항목 ' + (i + 1); }),
+        labels: state.labels.map(function (l, i) { return l !== '' ? l : t('fallback_item') + ' ' + (i + 1); }),
         datasets: [{
           label: s.name,
           data: values,
@@ -3337,12 +3850,12 @@ window.SVGCanvas=exports;
     var c = chartColors();
     var lg = legendInfo(false);
     unitMode = computeUnitMode(lg.display && lg.position === 'top');
-    var catLabels = state.labels.map(function (l, i) { return l !== '' ? l : '항목 ' + (i + 1); });
+    var catLabels = state.labels.map(function (l, i) { return l !== '' ? l : t('fallback_item') + ' ' + (i + 1); });
 
     var datasets = state.series.map(function (s, i) {
       var color = seriesColor(i);
       return {
-        label: s.name || '(이름 없음)',
+        label: s.name || t('fallback_name_empty'),
         data: s.values.map(parseValue),
         borderColor: color,
         backgroundColor: style.radarFill ? rgba(color, 0.15) : 'transparent',
@@ -3487,7 +4000,7 @@ window.SVGCanvas=exports;
       ctx.fillStyle = cssVar('--gray');
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      ctx.fillText('(단위: ' + unit + ')', isCircular(chartType) ? 8 : ch.chartArea.left, y);
+      ctx.fillText(unitLabel(unit), isCircular(chartType) ? 8 : ch.chartArea.left, y);
       ctx.restore();
     }
   };
@@ -3628,7 +4141,7 @@ window.SVGCanvas=exports;
         var cx = meta.data[0].x, cy = meta.data[0].y;
         ctx.fillStyle = cssVar('--gray');
         ctx.font = '400 ' + fs(12) + 'px ' + Chart.defaults.font.family;
-        ctx.fillText('합계', cx, cy - 12 * scale);
+        ctx.fillText(t('label_total'), cx, cy - 12 * scale);
         ctx.fillStyle = cssVar('--navy');
         ctx.font = '700 ' + fs(20) + 'px ' + Chart.defaults.font.family;
         ctx.fillText(fmt(total), cx, cy + 10 * scale);
@@ -3724,7 +4237,7 @@ window.SVGCanvas=exports;
         ctx.save();
         circle(cx1, cy1, r1, color1);
 
-        var name1 = vennState.nameA || '집합 A';
+        var name1 = vennState.nameA || t('fallback_set_a');
         var items1 = uniqList(vennState.itemsA);
         var lineH1 = fs(16);
         // 이름 한 줄(제목) 몫을 미리 빼 두고, 남는 줄에 항목을 채움
@@ -3744,7 +4257,7 @@ window.SVGCanvas=exports;
         ctx.font = '400 ' + fs(12) + 'px ' + Chart.defaults.font.family;
         ctx.fillStyle = cssVar('--ink');
         shown1.forEach(function (s) { ctx.fillText(s, cx1, y1); y1 += lineH1; });
-        if (overflow1) ctx.fillText('+' + (items1.length - shown1.length) + '개 더', cx1, y1);
+        if (overflow1) ctx.fillText(overflowMore(items1.length - shown1.length), cx1, y1);
 
         ctx.restore();
         return;
@@ -3768,8 +4281,8 @@ window.SVGCanvas=exports;
       ctx.textBaseline = 'alphabetic';
       ctx.font = '700 ' + fs(14) + 'px ' + Chart.defaults.font.family;
       ctx.fillStyle = cssVar('--navy');
-      ctx.fillText(vennState.nameA || '집합 A', cxA, cy - r - fs(10));
-      ctx.fillText(vennState.nameB || '집합 B', cxB, cy - r - fs(10));
+      ctx.fillText(vennState.nameA || t('fallback_set_a'), cxA, cy - r - fs(10));
+      ctx.fillText(vennState.nameB || t('fallback_set_b'), cxB, cy - r - fs(10));
 
       var setA = uniqList(vennState.itemsA);
       var setB = uniqList(vennState.itemsB);
@@ -3791,7 +4304,7 @@ window.SVGCanvas=exports;
           ctx.fillText(s, x, y);
           y += lineH;
         });
-        if (n > maxLines) ctx.fillText('+' + (n - shown.length) + '개 더', x, y);
+        if (n > maxLines) ctx.fillText(overflowMore(n - shown.length), x, y);
       }
 
       list(onlyA, cxA - d * 0.45);
@@ -4129,7 +4642,7 @@ window.SVGCanvas=exports;
       var items = [];
       state.labels.forEach(function (l, i) {
         var n = parseValue(s.values[i]);
-        if (n !== null && n > 0) items.push({ value: n, index: i, label: l !== '' ? l : '항목 ' + (i + 1) });
+        if (n !== null && n > 0) items.push({ value: n, index: i, label: l !== '' ? l : t('fallback_item') + ' ' + (i + 1) });
       });
       if (!items.length) return;
 
@@ -4199,7 +4712,7 @@ window.SVGCanvas=exports;
       var items = [];
       state.labels.forEach(function (l, i) {
         var n = parseValue(s.values[i]);
-        if (n !== null && n > 0) items.push({ value: n, index: i, label: l !== '' ? l : '항목 ' + (i + 1) });
+        if (n !== null && n > 0) items.push({ value: n, index: i, label: l !== '' ? l : t('fallback_item') + ' ' + (i + 1) });
       });
       var n = items.length;
       if (!n) return;
@@ -4291,22 +4804,22 @@ window.SVGCanvas=exports;
     var groups = ['비교', '추이', '비율', '관계', '순서'];
     typeGroups.textContent = '';
     groups.forEach(function (g) {
-      var grid = el('div', { class: 'type-grid', role: 'radiogroup', 'aria-label': g + ' 그래프' });
-      CHART_TYPES.filter(function (t) { return t.group === g; }).forEach(function (t) {
+      var grid = el('div', { class: 'type-grid', role: 'radiogroup', 'aria-label': groupLabel(g) + t('aria_group_suffix') });
+      CHART_TYPES.filter(function (ct) { return ct.group === g; }).forEach(function (ct) {
         var card = el('button', {
           type: 'button',
           class: 'type-card',
           role: 'radio',
-          'data-type': t.id,
+          'data-type': ct.id,
           'aria-checked': 'false',
-          title: t.desc
+          title: ctDesc(ct.id)
         });
-        card.innerHTML = '<svg viewBox="0 0 48 32" fill="currentColor" aria-hidden="true">' + ICON[t.id] + '</svg>';
-        card.appendChild(el('span', { text: t.label }));
+        card.innerHTML = '<svg viewBox="0 0 48 32" fill="currentColor" aria-hidden="true">' + ICON[ct.id] + '</svg>';
+        card.appendChild(el('span', { text: ctLabel(ct.id) }));
         grid.appendChild(card);
       });
       typeGroups.appendChild(el('div', { class: 'type-group' }, [
-        el('h3', { text: g }),
+        el('h3', { text: groupLabel(g) }),
         grid
       ]));
     });
@@ -4317,9 +4830,11 @@ window.SVGCanvas=exports;
       card.setAttribute('aria-checked', card.getAttribute('data-type') === chartType ? 'true' : 'false');
     });
     var info = typeInfo(chartType);
-    typeDesc.textContent = info.desc;
-    typeTag.textContent = info.label;
-    canvas.setAttribute('aria-label', '입력한 데이터의 ' + info.label + ' 그래프');
+    typeDesc.textContent = ctDesc(info.id);
+    typeTag.textContent = ctLabel(info.id);
+    canvas.setAttribute('aria-label', currentLang === 'en'
+      ? ('A ' + ctLabel(info.id) + ' chart of your data')
+      : ('입력한 데이터의 ' + ctLabel(info.id) + ' 그래프'));
   }
 
   // 종류에 따라 필요한 추가 선택(파이·트리맵·퍼널의 열 선택)
@@ -4329,7 +4844,7 @@ window.SVGCanvas=exports;
       if (pieSeries >= state.series.length) pieSeries = 0;
       var select = el('select', { id: 'pie-series' });
       state.series.forEach(function (s, i) {
-        var opt = el('option', { value: i, text: s.name || '(이름 없음)' });
+        var opt = el('option', { value: i, text: s.name || t('fallback_name_empty') });
         if (i === pieSeries) opt.selected = true;
         select.appendChild(opt);
       });
@@ -4338,17 +4853,17 @@ window.SVGCanvas=exports;
         syncEmpty();
         updateChart();
       });
-      typeOptions.appendChild(el('label', { class: 'field' }, [el('span', { text: '그릴 열' }), select]));
-      var hint = '음수와 빈 칸은 0으로 처리합니다. 항목이 8개를 넘으면 색이 반복되니 8개 이하로 줄이는 것을 권합니다.';
-      if (chartType === 'funnel') hint = '음수와 빈 칸은 0으로 처리합니다. 보통 값이 큰 항목부터 작은 항목 순서로 입력합니다(방문자→가입→결제 등).';
-      if (chartType === 'rose') hint = '음수와 빈 칸은 0으로 처리합니다. 조각은 모두 같은 각도로 나뉘고, 값이 클수록 중심에서 멀리(반지름이 길게) 그려집니다.';
+      typeOptions.appendChild(el('label', { class: 'field' }, [el('span', { text: t('field_pick_column') }), select]));
+      var hint = t('hint_single_default');
+      if (chartType === 'funnel') hint = t('hint_funnel');
+      if (chartType === 'rose') hint = t('hint_rose');
       typeOptions.appendChild(el('p', { class: 'hint', text: hint }));
     } else if (isStructural(chartType)) {
-      typeOptions.appendChild(el('p', { class: 'hint', text: '"데이터 입력" 탭에서 이 그래프에 맞는 전용 입력창을 채워 주세요.' }));
+      typeOptions.appendChild(el('p', { class: 'hint', text: t('hint_structural_fill') }));
     } else if (chartType === 'combo') {
-      typeOptions.appendChild(el('p', { class: 'hint', text: '"스타일" 탭의 "색상" 목록에서 계열(열)마다 막대 또는 선을 고를 수 있습니다. 고르지 않으면 마지막 열이 선으로 표시됩니다.' }));
+      typeOptions.appendChild(el('p', { class: 'hint', text: t('hint_combo_pick') }));
     } else if (chartType === 'area') {
-      typeOptions.appendChild(el('p', { class: 'hint', text: '계열(열)이 여러 개면 자동으로 차곡차곡 쌓인 모양(누적)으로 그려집니다. 채우기 진하기는 "스타일" 탭의 "영역차트" 항목에서 조절할 수 있습니다.' }));
+      typeOptions.appendChild(el('p', { class: 'hint', text: t('hint_area_stack') }));
     }
   }
 
@@ -4424,7 +4939,7 @@ window.SVGCanvas=exports;
     if (panelEl) panelEl.classList.toggle('full-view', on);
     if (fullViewBtn) {
       fullViewBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
-      fullViewBtn.textContent = on ? '부분 보기' : '전체보기';
+      fullViewBtn.textContent = on ? t('fullview_off') : t('fullview_on');
     }
     if (on) {
       // 4칸을 모두 펼침 (탭 선택 상태는 "부분 보기"로 돌아갈 때 그대로 씀)
@@ -4593,7 +5108,7 @@ window.SVGCanvas=exports;
 
   // 색 선택기 한 줄을 colorList에 추가(extraNode가 있으면 오른쪽에 추가 컨트롤을 덧붙임: 복합차트의 막대/선 선택 등)
   function addColorRow(name, color, onSet, extraNode) {
-    var input = el('input', { type: 'color', value: color, 'aria-label': name + ' 색상' });
+    var input = el('input', { type: 'color', value: color, 'aria-label': currentLang === 'en' ? (name + ' color') : (name + ' 색상') });
     var hex = el('span', { class: 'hex', text: String(color).toUpperCase() });
     input.addEventListener('input', function () {
       onSet(input.value);
@@ -4608,9 +5123,9 @@ window.SVGCanvas=exports;
 
   // 복합차트: 계열(열)마다 막대/선을 고르는 작은 토글
   function comboToggle(i) {
-    var seg = el('div', { class: 'seg tiny', role: 'group', 'aria-label': '막대 또는 선' });
-    var btnBar = el('button', { type: 'button', text: '막대' });
-    var btnLine = el('button', { type: 'button', text: '선' });
+    var seg = el('div', { class: 'seg tiny', role: 'group', 'aria-label': t('aria_bar_or_line') });
+    var btnBar = el('button', { type: 'button', text: t('btn_bar') });
+    var btnLine = el('button', { type: 'button', text: t('btn_line') });
     function sync() {
       var line = isLineSeries(null, i);
       btnBar.setAttribute('aria-pressed', line ? 'false' : 'true');
@@ -4630,42 +5145,42 @@ window.SVGCanvas=exports;
     colorList.textContent = '';
 
     if (chartType === 'venn') {
-      colorTitle.textContent = '집합별 색상';
-      addColorRow(vennState.nameA || '집합 A', sliceColor(0), function (v) { customSlice[0] = v; });
+      colorTitle.textContent = t('title_set_colors');
+      addColorRow(vennState.nameA || t('fallback_set_a'), sliceColor(0), function (v) { customSlice[0] = v; });
       if ((vennState.mode || 'two') !== 'one') {
-        addColorRow(vennState.nameB || '집합 B', sliceColor(1), function (v) { customSlice[1] = v; });
+        addColorRow(vennState.nameB || t('fallback_set_b'), sliceColor(1), function (v) { customSlice[1] = v; });
       }
       return;
     }
     if (chartType === 'flow') {
-      colorTitle.textContent = '단계별 색상';
+      colorTitle.textContent = t('title_step_colors');
       flowState.steps.forEach(function (name, i) {
-        addColorRow(name || ('단계 ' + (i + 1)), sliceColor(i), function (v) { customSlice[i] = v; });
+        addColorRow(name || (t('fallback_step') + ' ' + (i + 1)), sliceColor(i), function (v) { customSlice[i] = v; });
       });
       return;
     }
     if (chartType === 'hub') {
-      colorTitle.textContent = '가운데·바깥 원 색상';
-      addColorRow(hubState.centerTitle || '가운데 원', sliceColor(0), function (v) { customSlice[0] = v; });
+      colorTitle.textContent = t('title_hub_colors');
+      addColorRow(hubState.centerTitle || t('fallback_center_circle'), sliceColor(0), function (v) { customSlice[0] = v; });
       (hubState.items || []).slice(0, 6).forEach(function (name, i) {
-        addColorRow(name || ('바깥 원 ' + (i + 1)), sliceColor(i + 1), function (v) { customSlice[i + 1] = v; });
+        addColorRow(name || (t('fallback_outer') + ' ' + (i + 1)), sliceColor(i + 1), function (v) { customSlice[i + 1] = v; });
       });
       return;
     }
     if (chartType === 'timeline') {
-      colorTitle.textContent = '선·점 색상';
-      addColorRow('타임라인', sliceColor(0), function (v) { customSlice[0] = v; });
+      colorTitle.textContent = t('title_timeline_colors');
+      addColorRow(t('label_timeline_single'), sliceColor(0), function (v) { customSlice[0] = v; });
       return;
     }
 
     var circ = isSingleSeries(chartType);
-    if (chartType === 'treemap') colorTitle.textContent = '블록(항목)별 색상';
-    else if (chartType === 'funnel') colorTitle.textContent = '단계(항목)별 색상';
-    else if (chartType === 'combo') colorTitle.textContent = '열(계열)별 색상·모양';
-    else colorTitle.textContent = circ ? '조각(항목)별 색상' : '열별 색상';
+    if (chartType === 'treemap') colorTitle.textContent = t('title_treemap_colors');
+    else if (chartType === 'funnel') colorTitle.textContent = t('title_funnel_colors');
+    else if (chartType === 'combo') colorTitle.textContent = t('title_combo_colors');
+    else colorTitle.textContent = circ ? t('title_slice_colors') : t('title_series_colors');
     var names = circ
-      ? state.labels.map(function (l, i) { return l !== '' ? l : '항목 ' + (i + 1); })
-      : state.series.map(function (s) { return s.name || '(이름 없음)'; });
+      ? state.labels.map(function (l, i) { return l !== '' ? l : t('fallback_item') + ' ' + (i + 1); })
+      : state.series.map(function (s) { return s.name || t('fallback_name_empty'); });
     names.forEach(function (name, i) {
       var color = circ ? sliceColor(i) : seriesColor(i);
       var extra = chartType === 'combo' ? comboToggle(i) : null;
@@ -4681,121 +5196,128 @@ window.SVGCanvas=exports;
   }
 
   function buildStylePane() {
+    // 언어를 바꿀 때 다시 그릴 수 있도록, 매번 비우고 처음부터 새로 만듭니다.
+    styleControls.textContent = '';
+    styleSyncers = [];
+    styleRows = [];
+    colorList = null;
+    colorTitle = null;
+
     // 1. 색상
-    var secColor = makeSection('색상');
-    var themeWrap = el('div', { class: 'theme-list', role: 'radiogroup', 'aria-label': '색상 테마' });
-    var themeCards = THEMES.map(function (t) {
+    var secColor = makeSection(t('sec_color'));
+    var themeWrap = el('div', { class: 'theme-list', role: 'radiogroup', 'aria-label': t('aria_color_theme') });
+    var themeCards = THEMES.map(function (theme) {
       var card = el('button', { type: 'button', class: 'theme-card', role: 'radio' });
       var chips = el('span', { class: 'chips', 'aria-hidden': 'true' });
-      themeColors(t.id).slice(0, 6).forEach(function (col) {
+      themeColors(theme.id).slice(0, 6).forEach(function (col) {
         var chip = el('span');
         chip.style.background = col;
         chips.appendChild(chip);
       });
       card.appendChild(chips);
-      card.appendChild(el('span', { class: 'theme-name', text: t.name }));
+      card.appendChild(el('span', { class: 'theme-name', text: t('theme_' + theme.id) }));
       card.addEventListener('click', function () {
-        style.theme = t.id;
+        style.theme = theme.id;
         resetColors(); // 테마를 바꾸면 직접 고른 색은 초기화
         refreshColors();
       });
       themeWrap.appendChild(card);
-      return { card: card, id: t.id };
+      return { card: card, id: theme.id };
     });
     styleSyncers.push(function () {
       themeCards.forEach(function (x) { x.card.setAttribute('aria-checked', x.id === style.theme ? 'true' : 'false'); });
     });
     addRow(secColor, themeWrap, 'all');
 
-    colorTitle = el('div', { class: 'style-label' }, [el('span', { text: '열별 색상' })]);
+    colorTitle = el('div', { class: 'style-label' }, [el('span', { text: t('label_series_colors') })]);
     colorList = el('ul', { class: 'color-list' });
-    var resetColorBtn = el('button', { type: 'button', class: 'btn btn-ghost btn-small', text: '색상 초기화' });
+    var resetColorBtn = el('button', { type: 'button', class: 'btn btn-ghost btn-small', text: t('btn_reset_colors') });
     resetColorBtn.addEventListener('click', function () { resetColors(); refreshColors(); });
     addRow(secColor, el('div', { class: 'style-row' }, [colorTitle, colorList, resetColorBtn]), 'all');
 
     // 2. 크기·글자
-    var secSize = makeSection('크기와 글자');
+    var secSize = makeSection(t('sec_size'));
     addSeg(secSize, {
-      key: 'aspect', label: '그래프 비율 (가로 : 세로)',
+      key: 'aspect', label: t('lbl_aspect'),
       options: [['2:1', '2 : 1'], ['16:9', '16 : 9'], ['4:3', '4 : 3'], ['1:1', '1 : 1']],
       onChange: function () {
         applyAspect();
         requestAnimationFrame(function () { if (chart) chart.resize(); updateChart(); });
       }
     });
-    addSlider(secSize, { key: 'fontScale', label: '글자 크기', min: 70, max: 140, step: 5, unit: '%' });
+    addSlider(secSize, { key: 'fontScale', label: t('lbl_font_scale'), min: 70, max: 140, step: 5, unit: '%' });
 
     // 3. 두께
-    var secThick = makeSection('선·막대·도넛');
-    addSlider(secThick, { key: 'lineWidth', label: '선 두께', min: 1, max: 8, unit: 'px', when: 'lineStyle' });
-    addSlider(secThick, { key: 'pointRadius', label: '점 크기 (반지름)', min: 0, max: 8, unit: 'px', when: 'lineStyle' });
+    var secThick = makeSection(t('sec_thickness'));
+    addSlider(secThick, { key: 'lineWidth', label: t('lbl_line_width'), min: 1, max: 8, unit: 'px', when: 'lineStyle' });
+    addSlider(secThick, { key: 'pointRadius', label: t('lbl_point_radius'), min: 0, max: 8, unit: 'px', when: 'lineStyle' });
     addSlider(secThick, {
-      key: 'barThickness', label: '막대 최대 두께', min: 8, max: 96, unit: 'px', when: 'bar',
-      hint: '항목이 많으면 막대가 자동으로 가늘어져, 최대 두께를 키워도 변화가 없을 수 있습니다.'
+      key: 'barThickness', label: t('lbl_bar_thickness'), min: 8, max: 96, unit: 'px', when: 'bar',
+      hint: t('hint_bar_thickness')
     });
-    addSlider(secThick, { key: 'cutout', label: '도넛 가운데 구멍', min: 40, max: 80, unit: '%', when: 'doughnut' });
+    addSlider(secThick, { key: 'cutout', label: t('lbl_cutout'), min: 40, max: 80, unit: '%', when: 'doughnut' });
 
     // 4. 벤 다이어그램
-    var secVenn = makeSection('벤 다이어그램');
-    addSlider(secVenn, { key: 'vennSize', label: '원 크기', min: 60, max: 130, unit: '%', when: 'venn' });
-    addSlider(secVenn, { key: 'vennOpacity', label: '원 투명도', min: 0, max: 50, unit: '%', when: 'venn' });
+    var secVenn = makeSection(t('sec_venn'));
+    addSlider(secVenn, { key: 'vennSize', label: t('lbl_venn_size'), min: 60, max: 130, unit: '%', when: 'venn' });
+    addSlider(secVenn, { key: 'vennOpacity', label: t('lbl_venn_opacity'), min: 0, max: 50, unit: '%', when: 'venn' });
 
     // 5. 타임라인
-    var secTimeline = makeSection('타임라인');
-    addSlider(secTimeline, { key: 'timelineLine', label: '가로선 두께', min: 1, max: 8, unit: 'px', when: 'timeline' });
-    addSlider(secTimeline, { key: 'timelineDot', label: '점 크기', min: 4, max: 20, unit: 'px', when: 'timeline' });
+    var secTimeline = makeSection(t('sec_timeline'));
+    addSlider(secTimeline, { key: 'timelineLine', label: t('lbl_timeline_line'), min: 1, max: 8, unit: 'px', when: 'timeline' });
+    addSlider(secTimeline, { key: 'timelineDot', label: t('lbl_timeline_dot'), min: 4, max: 20, unit: 'px', when: 'timeline' });
 
     // 6. 순서도
-    var secFlow = makeSection('순서도');
-    addSlider(secFlow, { key: 'flowRadius', label: '상자 모서리 둥글기', min: 0, max: 30, unit: 'px', when: 'flow' });
-    addSlider(secFlow, { key: 'flowArrow', label: '화살표 두께', min: 1, max: 6, unit: 'px', when: 'flow' });
+    var secFlow = makeSection(t('sec_flow'));
+    addSlider(secFlow, { key: 'flowRadius', label: t('lbl_flow_radius'), min: 0, max: 30, unit: 'px', when: 'flow' });
+    addSlider(secFlow, { key: 'flowArrow', label: t('lbl_flow_arrow'), min: 1, max: 6, unit: 'px', when: 'flow' });
 
     // 6.5. 허브 다이어그램
-    var secHub = makeSection('허브 다이어그램');
-    addSlider(secHub, { key: 'hubSize', label: '원 크기', min: 60, max: 130, unit: '%', when: 'hub' });
-    addSlider(secHub, { key: 'hubBorder', label: '원 테두리·연결선 굵기', min: 1, max: 8, unit: 'px', when: 'hub' });
+    var secHub = makeSection(t('sec_hub'));
+    addSlider(secHub, { key: 'hubSize', label: t('lbl_hub_size'), min: 60, max: 130, unit: '%', when: 'hub' });
+    addSlider(secHub, { key: 'hubBorder', label: t('lbl_hub_border'), min: 1, max: 8, unit: 'px', when: 'hub' });
 
     // 6.6. 레이더 차트
-    var secRadar = makeSection('레이더 차트');
-    addToggle(secRadar, { key: 'radarFill', label: '영역 채우기', when: 'radar' });
+    var secRadar = makeSection(t('sec_radar'));
+    addToggle(secRadar, { key: 'radarFill', label: t('lbl_radar_fill'), when: 'radar' });
 
     // 6.7. 트리맵
-    var secTreemap = makeSection('트리맵');
-    addSlider(secTreemap, { key: 'treemapGap', label: '블록 사이 간격', min: 0, max: 12, unit: 'px', when: 'treemap' });
+    var secTreemap = makeSection(t('sec_treemap'));
+    addSlider(secTreemap, { key: 'treemapGap', label: t('lbl_treemap_gap'), min: 0, max: 12, unit: 'px', when: 'treemap' });
 
     // 6.8. 퍼널 차트
-    var secFunnel = makeSection('퍼널 차트');
-    addSlider(secFunnel, { key: 'funnelGap', label: '단계 사이 간격', min: 0, max: 20, unit: 'px', when: 'funnel' });
+    var secFunnel = makeSection(t('sec_funnel'));
+    addSlider(secFunnel, { key: 'funnelGap', label: t('lbl_funnel_gap'), min: 0, max: 20, unit: 'px', when: 'funnel' });
 
     // 6.9. 영역차트
-    var secArea = makeSection('영역차트');
-    addSlider(secArea, { key: 'areaOpacity', label: '채우기 진하기', min: 20, max: 100, unit: '%', when: 'area' });
+    var secArea = makeSection(t('sec_area'));
+    addSlider(secArea, { key: 'areaOpacity', label: t('lbl_area_opacity'), min: 20, max: 100, unit: '%', when: 'area' });
 
     // 7. 표시
-    var secShow = makeSection('표시');
+    var secShow = makeSection(t('sec_show'));
     addSeg(secShow, {
-      key: 'legendPos', label: '범례 위치',
-      options: [['auto', '자동'], ['top', '위'], ['bottom', '아래'], ['right', '오른쪽'], ['none', '숨김']],
+      key: 'legendPos', label: t('lbl_legend_pos'),
+      options: [['auto', t('opt_auto')], ['top', t('opt_top')], ['bottom', t('opt_bottom')], ['right', t('opt_right')], ['none', t('opt_hidden')]],
       when: 'legend'
     });
-    addToggle(secShow, { key: 'showGrid', label: '가로 격자선', when: 'cartesian' });
+    addToggle(secShow, { key: 'showGrid', label: t('lbl_show_grid'), when: 'cartesian' });
     addToggle(secShow, {
-      key: 'showLastValue', label: '꺾은선 마지막 값', when: 'line',
+      key: 'showLastValue', label: t('lbl_show_last_value'), when: 'line',
       disabledWhen: function () { return style.showAllValues; }
     });
-    addToggle(secShow, { key: 'showAllValues', label: '모든 값 표시', when: 'cartesian' });
+    addToggle(secShow, { key: 'showAllValues', label: t('lbl_show_all_values'), when: 'cartesian' });
     addSeg(secShow, {
-      key: 'pieLabel', label: '조각 위 글자',
-      options: [['percent', '비율(%)'], ['value', '값'], ['both', '비율+값'], ['none', '없음']],
+      key: 'pieLabel', label: t('lbl_pie_label'),
+      options: [['percent', t('opt_pct')], ['value', t('opt_value')], ['both', t('opt_both')], ['none', t('opt_none')]],
       when: 'circular'
     });
 
     // 5. 초기화
-    var reset = el('button', { type: 'button', class: 'btn btn-ghost', text: '스타일 초기화' });
+    var reset = el('button', { type: 'button', class: 'btn btn-ghost', text: t('btn_reset_style') });
     reset.addEventListener('click', resetStyle);
     styleControls.appendChild(el('div', { class: 'style-reset' }, [
       reset,
-      el('p', { class: 'hint small', text: '색·크기·표시 설정만 처음 상태로 되돌립니다. 입력한 데이터는 바뀌지 않습니다.' })
+      el('p', { class: 'hint small', text: t('hint_reset_style') })
     ]));
 
     renderColorList();
@@ -4843,10 +5365,10 @@ window.SVGCanvas=exports;
   }
 
   function exportFileName(ext) {
-    var t = chartTitle.trim().replace(/[\\\/:*?"<>|]/g, '').replace(/\s+/g, '_').slice(0, 40) || '그래프';
+    var base = chartTitle.trim().replace(/[\\\/:*?"<>|]/g, '').replace(/\s+/g, '_').slice(0, 40) || t('default_filename');
     var d = new Date();
     var ymd = d.getFullYear() + ('0' + (d.getMonth() + 1)).slice(-2) + ('0' + d.getDate()).slice(-2);
-    return t + '_' + ymd + '.' + ext;
+    return base + '_' + ymd + '.' + ext;
   }
 
   // 파일 저장. 일반 브라우저에서는 다운로드 링크를 누르는 방식이고,
@@ -5019,12 +5541,12 @@ window.SVGCanvas=exports;
         if (r1 < 8) return;
         var cx1 = area.left + w / 2, cy1 = area.top + h / 2;
         var color1raw = sliceColor(0), color1 = hexNoHash(color1raw);
-        var name1 = vennState.nameA || '집합 A';
+        var name1 = vennState.nameA || t('fallback_set_a');
         var items1 = uniqList(vennState.itemsA).slice(0, 16);
         var fullItems1 = uniqList(vennState.itemsA);
         var runs1 = [{ text: name1, options: { bold: true, fontSize: fontPt(15), color: navy, breakLine: true } }];
         items1.forEach(function (s) { runs1.push({ text: s, options: { fontSize: fontPt(12), color: ink, breakLine: true } }); });
-        if (fullItems1.length > items1.length) runs1.push({ text: '+' + (fullItems1.length - items1.length) + '개 더', options: { fontSize: fontPt(12), color: ink } });
+        if (fullItems1.length > items1.length) runs1.push({ text: overflowMore(fullItems1.length - items1.length), options: { fontSize: fontPt(12), color: ink } });
         slide.addText(runs1, {
           shape: pptx.ShapeType.ellipse,
           x: toIn(cx1 - r1), y: toIn(cy1 - r1), w: toIn(r1 * 2), h: toIn(r1 * 2),
@@ -5054,8 +5576,8 @@ window.SVGCanvas=exports;
       });
 
       var nameH = fs(26);
-      addLabel(vennState.nameA || '집합 A', cxA - r, cy - r - fs(10) - nameH, r * 2, nameH, { bold: true, fontSize: fontPt(14), color: navy, valign: 'bottom' });
-      addLabel(vennState.nameB || '집합 B', cxB - r, cy - r - fs(10) - nameH, r * 2, nameH, { bold: true, fontSize: fontPt(14), color: navy, valign: 'bottom' });
+      addLabel(vennState.nameA || t('fallback_set_a'), cxA - r, cy - r - fs(10) - nameH, r * 2, nameH, { bold: true, fontSize: fontPt(14), color: navy, valign: 'bottom' });
+      addLabel(vennState.nameB || t('fallback_set_b'), cxB - r, cy - r - fs(10) - nameH, r * 2, nameH, { bold: true, fontSize: fontPt(14), color: navy, valign: 'bottom' });
 
       var setA = uniqList(vennState.itemsA);
       var setB = uniqList(vennState.itemsB);
@@ -5066,7 +5588,7 @@ window.SVGCanvas=exports;
       function listRuns(items) {
         var shown = items.slice(0, 10);
         var runs = shown.map(function (s) { return { text: s, options: { fontSize: fontPt(12), color: ink, breakLine: true } }; });
-        if (items.length > shown.length) runs.push({ text: '+' + (items.length - shown.length) + '개 더', options: { fontSize: fontPt(12), color: ink } });
+        if (items.length > shown.length) runs.push({ text: overflowMore(items.length - shown.length), options: { fontSize: fontPt(12), color: ink } });
         else if (runs.length) runs[runs.length - 1].options.breakLine = false;
         return runs;
       }
@@ -5121,7 +5643,7 @@ window.SVGCanvas=exports;
 
       var hTitle = (hubState.centerTitle || '').trim();
       var hSub = (hubState.centerSub || '').trim();
-      var centerRuns = hTitle || '중심';
+      var centerRuns = hTitle || t('fallback_center');
       if (hTitle && hSub) {
         centerRuns = [
           { text: hTitle, options: { bold: true, fontSize: fontPt(14), color: centerTextColor, breakLine: true } },
@@ -5213,7 +5735,7 @@ window.SVGCanvas=exports;
       var itemsT = [];
       state.labels.forEach(function (l, i) {
         var n = parseValue(sT.values[i]);
-        if (n !== null && n > 0) itemsT.push({ value: n, index: i, label: l !== '' ? l : '항목 ' + (i + 1) });
+        if (n !== null && n > 0) itemsT.push({ value: n, index: i, label: l !== '' ? l : t('fallback_item') + ' ' + (i + 1) });
       });
       if (!itemsT.length) return;
       var rectsT = squarifyTreemap(
@@ -5254,7 +5776,7 @@ window.SVGCanvas=exports;
       var itemsF = [];
       state.labels.forEach(function (l, i) {
         var n = parseValue(sF.values[i]);
-        if (n !== null && n > 0) itemsF.push({ value: n, index: i, label: l !== '' ? l : '항목 ' + (i + 1) });
+        if (n !== null && n > 0) itemsF.push({ value: n, index: i, label: l !== '' ? l : t('fallback_item') + ' ' + (i + 1) });
       });
       var nF = itemsF.length;
       if (!nF) return;
@@ -5311,7 +5833,7 @@ window.SVGCanvas=exports;
 
     var title = chartTitle.trim();
     var unit = chartUnit.trim();
-    if (unit) title = title ? title + '  (단위: ' + unit + ')' : '(단위: ' + unit + ')';
+    if (unit) title = title ? title + '  ' + unitLabel(unit) : unitLabel(unit);
 
     function finish() {
       pptx.write({ outputType: 'blob' }).then(function (blob) {
@@ -5342,7 +5864,7 @@ window.SVGCanvas=exports;
     }
     var box = { x: 0.6, y: title ? 1.15 : 0.5, w: wIn - 1.2, h: hIn - (title ? 1.65 : 1.0) };
 
-    var catLabels = state.labels.map(function (l, i) { return l !== '' ? l : '항목 ' + (i + 1); });
+    var catLabels = state.labels.map(function (l, i) { return l !== '' ? l : t('fallback_item') + ' ' + (i + 1); });
 
     if (chartType === 'rose') {
       // 장미차트(나이팅게일 로즈 차트): 파워포인트에는 이 모양의 네이티브 차트가 없어,
@@ -5410,7 +5932,7 @@ window.SVGCanvas=exports;
       var values = s.values.map(function (v) { var n = parseValue(v); return n !== null && n > 0 ? n : 0; });
       slide.addChart(
         chartType === 'doughnut' ? pptx.ChartType.doughnut : pptx.ChartType.pie,
-        [{ name: s.name || '계열 1', labels: catLabels, values: values }],
+        [{ name: s.name || (t('fallback_series') + ' 1'), labels: catLabels, values: values }],
         Object.assign({
           chartColors: values.map(function (v, i) { return hex(sliceColor(i)); }),
           showLegend: true,
@@ -5428,7 +5950,7 @@ window.SVGCanvas=exports;
       // 막대 계열이 1개일 때 pptxgenjs가 항목마다 색을 다르게 칠하는 것을 막을 수 있습니다.
       function seriesDef(i) {
         return {
-          name: state.series[i].name || ('계열 ' + (i + 1)),
+          name: state.series[i].name || (t('fallback_series') + ' ' + (i + 1)),
           labels: catLabels,
           values: state.series[i].values.map(function (v) { var n = parseValue(v); return n !== null ? n : 0; })
         };
@@ -5464,7 +5986,7 @@ window.SVGCanvas=exports;
     } else if (chartType === 'radar') {
       var chartDataR = state.series.map(function (sr, i) {
         return {
-          name: sr.name || ('계열 ' + (i + 1)),
+          name: sr.name || (t('fallback_series') + ' ' + (i + 1)),
           labels: catLabels,
           values: sr.values.map(function (v) { var n = parseValue(v); return n !== null ? n : 0; })
         };
@@ -5484,7 +6006,7 @@ window.SVGCanvas=exports;
       var isArea = chartType === 'area';
       var chartData = state.series.map(function (sr, i) {
         return {
-          name: sr.name || ('계열 ' + (i + 1)),
+          name: sr.name || (t('fallback_series') + ' ' + (i + 1)),
           labels: catLabels,
           values: sr.values.map(function (v) { var n = parseValue(v); return n !== null ? n : 0; })
         };
@@ -5515,20 +6037,32 @@ window.SVGCanvas=exports;
     finish();
   }
 
+  // '저장했습니다'/'저장하지 못했습니다' 처럼 파일명·크기 같은 값이 섞이는 문구는
+  // 사전(I18N) 대신 이렇게 두 언어를 한 번에 적어 둡니다 (unitLabel 등과 같은 방식).
+  function saveFailedMsg(detail) {
+    return currentLang === 'en' ? ('Could not save: ' + detail) : ('저장하지 못했습니다: ' + detail);
+  }
+  function saveDoneMsg(name, s, withSize) {
+    var sizeKB = withSize ? Math.round(s.sizeBytes / 1024).toLocaleString(currentLang === 'en' ? 'en-US' : 'ko-KR') : null;
+    return currentLang === 'en'
+      ? ('Saved ' + name + '. (' + fmt(s.outW) + ' × ' + fmt(s.outH) + ' px' + (withSize ? ', ' + sizeKB + 'KB' : '') + ')')
+      : (name + ' 파일을 저장했습니다. (' + fmt(s.outW) + ' × ' + fmt(s.outH) + ' px' + (withSize ? ', ' + sizeKB + 'KB' : '') + ')');
+  }
+
   function doExport() {
     if (!hasContent()) {
       selectTab(3, false);
-      setExportStatus('그래프에 표시할 숫자가 없어 저장할 수 없습니다. 데이터를 먼저 입력해 주세요.', true);
+      setExportStatus(t('msg_no_data'), true);
       return;
     }
     if (exportOpts.format === 'svg' && typeof SVGCanvas === 'undefined') {
       selectTab(3, false);
-      setExportStatus('SVG 저장에 필요한 lib/svgcanvas.js를 찾지 못했습니다.', true);
+      setExportStatus(t('msg_no_svg_lib'), true);
       return;
     }
     if (exportOpts.format === 'pptx' && typeof PptxGenJS === 'undefined') {
       selectTab(3, false);
-      setExportStatus('PPT 저장에 필요한 lib/pptxgenjs.bundle.js를 찾지 못했습니다.', true);
+      setExportStatus(t('msg_no_pptx_lib'), true);
       return;
     }
     var ext = exportOpts.format;
@@ -5539,17 +6073,17 @@ window.SVGCanvas=exports;
         var name = exportFileName(ext === 'pptx' ? 'pptx' : ext);
         downloadBlob(blob, name).then(function (result) {
           if (result === 'declined') {
-            setExportStatus('저장을 취소했습니다.', false);
+            setExportStatus(t('msg_save_cancelled'), false);
             return;
           }
-          setExportStatus(name + ' 파일을 저장했습니다. (' + fmt(s.outW) + ' × ' + fmt(s.outH) + ' px' +
-            (ext === 'png' || ext === 'pptx' ? ', ' + Math.round(blob.size / 1024).toLocaleString('ko-KR') + 'KB' : '') + ')', false);
+          s.sizeBytes = blob.size;
+          setExportStatus(saveDoneMsg(name, s, ext === 'png' || ext === 'pptx'), false);
         }).catch(function (err) {
-          setExportStatus('저장하지 못했습니다: ' + ((err && err.message) || '알 수 없는 오류'), true);
+          setExportStatus(saveFailedMsg((err && err.message) || t('msg_unknown_error')), true);
         });
       });
     } catch (err) {
-      setExportStatus('저장하지 못했습니다: ' + err.message, true);
+      setExportStatus(saveFailedMsg(err.message), true);
     } finally {
       exportTransparent = false;
     }
@@ -5559,16 +6093,24 @@ window.SVGCanvas=exports;
     exportSyncers.forEach(function (f) { f(); });
     if (!exportInfo) return;
     if (exportOpts.format === 'pptx') {
-      exportInfo.textContent = '가로 ' + fmt(PPTX_W) + 'px × 세로 ' + fmt(PPTX_H) + 'px (슬라이드 1장, 16:9 고정)';
+      exportInfo.textContent = currentLang === 'en'
+        ? ('Width ' + fmt(PPTX_W) + 'px × height ' + fmt(PPTX_H) + 'px (1 slide, fixed 16:9)')
+        : ('가로 ' + fmt(PPTX_W) + 'px × 세로 ' + fmt(PPTX_H) + 'px (슬라이드 1장, 16:9 고정)');
     } else {
       var s = exportSize();
-      exportInfo.textContent = '가로 ' + fmt(s.outW) + 'px × 세로 ' + fmt(s.outH) + 'px' +
-        (exportOpts.format === 'svg' ? ' 기준 (벡터라 확대해도 선명합니다)' : '');
+      exportInfo.textContent = currentLang === 'en'
+        ? ('Width ' + fmt(s.outW) + 'px × height ' + fmt(s.outH) + 'px' +
+          (exportOpts.format === 'svg' ? ' (vector, stays sharp when enlarged)' : ''))
+        : ('가로 ' + fmt(s.outW) + 'px × 세로 ' + fmt(s.outH) + 'px' +
+          (exportOpts.format === 'svg' ? ' 기준 (벡터라 확대해도 선명합니다)' : ''));
     }
   }
 
   function buildExportPane() {
     var box = document.getElementById('export-controls');
+    // 언어를 바꿀 때 다시 그릴 수 있도록, 매번 비우고 처음부터 새로 만듭니다.
+    box.textContent = '';
+    exportSyncers = [];
 
     function section(title) {
       var sec = el('section', { class: 'style-section' }, [el('h3', { text: title })]);
@@ -5594,29 +6136,25 @@ window.SVGCanvas=exports;
       sec.appendChild(el('div', { class: 'style-row' }, [group, hint]));
     }
 
-    seg(section('저장 형식'), 'format', '저장 형식', [['png', 'PNG'], ['svg', 'SVG'], ['pptx', 'PPT']], function () {
-      if (exportOpts.format === 'png') return '워드·PPT·한글 어디에나 넣을 수 있는 그림 파일입니다. 처음에는 PNG를 권합니다.';
-      if (exportOpts.format === 'svg') return '선과 글자 정보를 담은 벡터 파일입니다. 워드·PPT에는 넣을 수 있고, 한글은 버전에 따라 열리지 않을 수 있습니다. (글꼴은 컴퓨터에 설치된 글꼴로 대체될 수 있습니다.)';
-      return '파워포인트(.pptx) 파일로 저장합니다. 막대·가로막대·누적막대·꺾은선·복합·파이·도넛·레이더는 PPT 안에서 데이터와 색을 직접 다시 고칠 수 있는 "진짜" 차트로 들어가고, 벤 다이어그램·허브 다이어그램·타임라인·순서도·트리맵·퍼널은 원·네모·사다리꼴 같은 "진짜 도형"으로 들어갑니다. 둘 다 그림이 아니라서 PPT 안에서 다시 고칠 수 있습니다.';
+    seg(section(t('sec_format')), 'format', t('sec_format'), [['png', t('opt_png')], ['svg', t('opt_svg')], ['pptx', t('opt_pptx')]], function () {
+      if (exportOpts.format === 'png') return t('hint_format_png');
+      if (exportOpts.format === 'svg') return t('hint_format_svg');
+      return t('hint_format_pptx');
     });
-    seg(section('배경'), 'bg', '배경', [['white', '흰색'], ['transparent', '투명']], function () {
-      return exportOpts.bg === 'white'
-        ? '흰색 바탕에 그려 저장합니다.'
-        : '바탕을 칠하지 않습니다. 색이 있는 슬라이드 위에 올릴 때 좋고, 글자는 검정·네이비라 어두운 배경에서는 잘 안 보입니다. (PPT의 차트·도형 배경에는 적용되지 않고, PNG·SVG로 저장할 때만 적용됩니다.)';
+    seg(section(t('sec_background')), 'bg', t('sec_background'), [['white', t('opt_white')], ['transparent', t('opt_transparent')]], function () {
+      return exportOpts.bg === 'white' ? t('hint_bg_white') : t('hint_bg_transparent');
     });
 
-    var sizeSec = section('크기');
+    var sizeSec = section(t('sec_size_export'));
     exportInfo = el('p', { class: 'export-size' });
     var sizeHint = el('p', { class: 'hint small' });
     sizeSec.appendChild(exportInfo);
     sizeSec.appendChild(sizeHint);
     exportSyncers.push(function () {
-      sizeHint.textContent = exportOpts.format === 'pptx'
-        ? 'PPT는 1920×1080px(16:9) 슬라이드 1장 크기로 저장됩니다. 스타일 탭의 "그래프 비율"과는 별개입니다.'
-        : '세로 크기는 스타일 탭의 "그래프 비율"에 따라 정해집니다. 저장되는 그림은 지금 미리보기와 같은 모양입니다.';
+      sizeHint.textContent = exportOpts.format === 'pptx' ? t('hint_size_pptx') : t('hint_size_other');
     });
 
-    exportBtn = el('button', { type: 'button', class: 'btn btn-large', text: '저장하기' });
+    exportBtn = el('button', { type: 'button', class: 'btn btn-large', text: t('btn_save') });
     exportBtn.addEventListener('click', doExport);
     exportStatus = el('p', { class: 'status', role: 'status', 'aria-live': 'polite' });
     box.appendChild(el('div', { class: 'export-actions' }, [exportBtn, exportStatus]));
@@ -5647,6 +6185,7 @@ window.SVGCanvas=exports;
       if (isInvalid(t.value)) t.setAttribute('aria-invalid', 'true');
       else t.removeAttribute('aria-invalid');
     }
+    dataIsSample = false; // 직접 고쳤으니 더 이상 예시 데이터가 아님
     updateChart();
   });
 
@@ -5665,14 +6204,16 @@ window.SVGCanvas=exports;
       state.series.splice(dc, 1);
       customSeries.splice(dc, 1);
     }
+    dataIsSample = false;
     renderTable();
     updateChart();
   });
 
   btnAddRow.addEventListener('click', function () {
     if (state.labels.length >= MAX_ROWS) return;
-    state.labels.push('항목 ' + (state.labels.length + 1));
+    state.labels.push(t('fallback_item') + ' ' + (state.labels.length + 1));
     state.series.forEach(function (s) { s.values.push(''); });
+    dataIsSample = false;
     renderTable();
     updateChart();
     focusInput('label', state.labels.length - 1, 0);
@@ -5681,9 +6222,10 @@ window.SVGCanvas=exports;
   btnAddSeries.addEventListener('click', function () {
     if (state.series.length >= MAX_SERIES) return;
     state.series.push({
-      name: '계열 ' + (state.series.length + 1),
+      name: t('fallback_series') + ' ' + (state.series.length + 1),
       values: state.labels.map(function () { return ''; })
     });
+    dataIsSample = false;
     renderTable();
     updateChart();
     focusInput('series-name', 0, state.series.length - 1);
@@ -5709,15 +6251,17 @@ window.SVGCanvas=exports;
   });
 
   btnSample.addEventListener('click', function () {
-    state = clone(SAMPLE);
+    state = clone(sampleData());
+    dataIsSample = true;
     resetColors();
-    setMeta(SAMPLE_TITLE, SAMPLE_UNIT, true);
+    setMeta(sampleTitle(), sampleUnit(), true);
     renderTable();
     updateChart();
   });
 
   btnClear.addEventListener('click', function () {
     state = blankState();
+    dataIsSample = false;
     resetColors();
     setMeta('', '', false);
     renderTable();
@@ -5760,10 +6304,10 @@ window.SVGCanvas=exports;
   // 행과 열 바꾸기
   function transposeState(st) {
     return {
-      labels: st.series.map(function (s, i) { return s.name !== '' ? s.name : '항목 ' + (i + 1); }),
+      labels: st.series.map(function (s, i) { return s.name !== '' ? s.name : t('fallback_item') + ' ' + (i + 1); }),
       series: st.labels.map(function (label, r) {
         return {
-          name: label !== '' ? label : '계열 ' + (r + 1),
+          name: label !== '' ? label : t('fallback_series') + ' ' + (r + 1),
           values: st.series.map(function (s) { return s.values[r]; })
         };
       })
@@ -5775,11 +6319,15 @@ window.SVGCanvas=exports;
     if (st.labels.length > MAX_ROWS) {
       st.labels = st.labels.slice(0, MAX_ROWS);
       st.series.forEach(function (s) { s.values = s.values.slice(0, MAX_ROWS); });
-      notes.push('행은 최대 ' + MAX_ROWS + '개까지만 적용했습니다.');
+      notes.push(currentLang === 'en'
+        ? ('Only the first ' + MAX_ROWS + ' rows were applied.')
+        : ('행은 최대 ' + MAX_ROWS + '개까지만 적용했습니다.'));
     }
     if (st.series.length > MAX_SERIES) {
       st.series = st.series.slice(0, MAX_SERIES);
-      notes.push('열은 최대 ' + MAX_SERIES + '개까지만 적용했습니다.');
+      notes.push(currentLang === 'en'
+        ? ('Only the first ' + MAX_SERIES + ' columns were applied.')
+        : ('열은 최대 ' + MAX_SERIES + '개까지만 적용했습니다.'));
     }
     return st;
   }
@@ -5790,7 +6338,7 @@ window.SVGCanvas=exports;
     var lines = text.replace(/\r/g, '').split('\n').filter(function (l) {
       return l.trim() !== '';
     });
-    if (!lines.length) return { error: '붙여넣은 내용이 없습니다.' };
+    if (!lines.length) return { error: t('err_no_paste') };
 
     var delim = detectDelimiter(text);
     var rows = lines.map(function (l) { return splitLine(l, delim); });
@@ -5805,28 +6353,28 @@ window.SVGCanvas=exports;
       });
       if (allText) header = rows.shift();
     }
-    if (!rows.length) return { error: '열 제목만 있고 데이터 줄이 없습니다.' };
+    if (!rows.length) return { error: t('err_header_only') };
 
     var notes = [];
     var st;
     if (width === 1) {
       // 숫자만 한 줄씩 붙여넣은 경우
       st = {
-        labels: rows.map(function (r, i) { return '항목 ' + (i + 1); }),
-        series: [{ name: '계열 1', values: rows.map(function (r) { return r[0]; }) }]
+        labels: rows.map(function (r, i) { return t('fallback_item') + ' ' + (i + 1); }),
+        series: [{ name: t('fallback_series') + ' 1', values: rows.map(function (r) { return r[0]; }) }]
       };
     } else {
       var series = [];
       for (var c = 1; c < width; c++) {
         (function (c) {
           series.push({
-            name: header && header[c] ? header[c] : '계열 ' + c,
+            name: header && header[c] ? header[c] : t('fallback_series') + ' ' + c,
             values: rows.map(function (r) { return r[c]; })
           });
         })(c);
       }
       st = {
-        labels: rows.map(function (r, i) { return r[0] !== '' ? r[0] : '항목 ' + (i + 1); }),
+        labels: rows.map(function (r, i) { return r[0] !== '' ? r[0] : t('fallback_item') + ' ' + (i + 1); }),
         series: series
       };
 
@@ -5834,7 +6382,9 @@ window.SVGCanvas=exports;
       var yearHeader = header && header.slice(1).every(isYearLabel);
       if (yearHeader && st.labels.length <= MAX_SERIES) {
         st = transposeState(st);
-        notes.push('열 제목이 연도라서 연도가 가로축이 되도록 행·열을 바꿨습니다. (원래대로: "행·열 바꾸기")');
+        notes.push(currentLang === 'en'
+          ? ('Column titles were years, so rows and columns were swapped to put years on the horizontal axis. (To undo: "Swap rows/columns")')
+          : ('열 제목이 연도라서 연도가 가로축이 되도록 행·열을 바꿨습니다. (원래대로: "행·열 바꾸기")'));
       }
     }
 
@@ -5844,7 +6394,9 @@ window.SVGCanvas=exports;
     st.series.forEach(function (s) {
       s.values.forEach(function (v) { if (isInvalid(v)) bad++; });
     });
-    if (bad) notes.push('숫자가 아닌 칸 ' + bad + '개는 빨간색으로 표시됩니다.');
+    if (bad) notes.push(currentLang === 'en'
+      ? (bad + ' non-numeric cell(s) will be shown in red.')
+      : ('숫자가 아닌 칸 ' + bad + '개는 빨간색으로 표시됩니다.'));
 
     return { state: st, notes: notes };
   }
@@ -5857,11 +6409,14 @@ window.SVGCanvas=exports;
       return false;
     }
     state = result.state;
+    dataIsSample = false;
     resetColors();
     if (metaIsSample) setMeta('', '', false); // 예시 제목·단위는 새 데이터에 어울리지 않으므로 비움
     renderTable();
     updateChart();
-    var msg = state.labels.length + '개 항목 × ' + state.series.length + '개 열을 표에 적용했습니다.';
+    var msg = currentLang === 'en'
+      ? ('Applied ' + state.labels.length + ' item(s) × ' + state.series.length + ' column(s) to the table.')
+      : (state.labels.length + '개 항목 × ' + state.series.length + '개 열을 표에 적용했습니다.');
     if (result.notes.length) msg += ' ' + result.notes.join(' ');
     setStatus(msg, false);
     return true;
@@ -5874,10 +6429,11 @@ window.SVGCanvas=exports;
   document.getElementById('transpose').addEventListener('click', function () {
     var notes = [];
     state = limitState(transposeState(state), notes);
+    dataIsSample = false;
     resetColors();
     renderTable();
     updateChart();
-    setStatus('행과 열을 바꿨습니다. ' + notes.join(' '), false);
+    setStatus((currentLang === 'en' ? 'Swapped rows and columns. ' : '행과 열을 바꿨습니다. ') + notes.join(' '), false);
   });
 
   // ----- 붙여넣기(Ctrl+V)와 끌어다 놓기: 놓는 즉시 그래프에 반영 -----
@@ -5938,7 +6494,7 @@ window.SVGCanvas=exports;
 
   function readFile(file) {
     if (!/\.(csv|tsv|txt)$/i.test(file.name)) {
-      setStatus('엑셀 파일(.xlsx)은 아직 지원하지 않습니다. 표를 복사해서 붙여넣거나 CSV로 저장해서 올려 주세요.', true);
+      setStatus(t('err_xlsx_unsupported'), true);
       return;
     }
     file.arrayBuffer().then(function (buf) {
@@ -5972,12 +6528,12 @@ window.SVGCanvas=exports;
   });
 
   document.getElementById('show-as-text').addEventListener('click', function () {
-    var lines = [['항목'].concat(state.series.map(function (s) { return s.name; })).join('\t')];
+    var lines = [[t('th_item')].concat(state.series.map(function (s) { return s.name; })).join('\t')];
     state.labels.forEach(function (label, r) {
       lines.push([label].concat(state.series.map(function (s) { return s.values[r]; })).join('\t'));
     });
     pasteText.value = lines.join('\n');
-    setStatus('현재 표 내용을 탭으로 구분해 채웠습니다. 엑셀에 그대로 붙여넣을 수 있습니다.');
+    setStatus(t('msg_show_as_text'));
   });
 
   document.getElementById('clear-paste').addEventListener('click', function () {
@@ -6039,38 +6595,36 @@ window.SVGCanvas=exports;
     box.textContent = '';
 
     // 원 개수: 2개(교집합 비교, 기본) / 1개(이름+항목을 원 "안"에 표시)
-    var modeSeg = el('div', { class: 'seg wrap', role: 'group', 'aria-label': '벤 다이어그램 모양' });
-    var modeBtn2 = el('button', { type: 'button', text: '원 2개 (교집합)' });
-    var modeBtn1 = el('button', { type: 'button', text: '원 1개' });
+    var modeSeg = el('div', { class: 'seg wrap', role: 'group', 'aria-label': t('aria_venn_shape') });
+    var modeBtn2 = el('button', { type: 'button', text: t('btn_two_circles') });
+    var modeBtn1 = el('button', { type: 'button', text: t('btn_one_circle') });
     modeSeg.appendChild(modeBtn2);
     modeSeg.appendChild(modeBtn1);
 
     var nameA = el('input', { type: 'text', id: 'venn-name-a' });
     var nameB = el('input', { type: 'text', id: 'venn-name-b' });
-    var itemsA = el('textarea', { id: 'venn-items-a', rows: 7, class: 'textbox', placeholder: '철수\n민수\n지훈' });
-    var itemsB = el('textarea', { id: 'venn-items-b', rows: 7, class: 'textbox', placeholder: '영희\n지은\n수아' });
+    var itemsA = el('textarea', { id: 'venn-items-a', rows: 7, class: 'textbox', placeholder: t('placeholder_venn_items_a') });
+    var itemsB = el('textarea', { id: 'venn-items-b', rows: 7, class: 'textbox', placeholder: t('placeholder_venn_items_b') });
 
-    var labelA = el('span', { text: '집합 A 이름' });
-    var labelItemsA = el('span', { text: '집합 A 항목 (한 줄에 하나씩)' });
+    var labelA = el('span', { text: t('label_set_a_name') });
+    var labelItemsA = el('span', { text: t('label_set_a_items') });
     var fieldA = el('label', { class: 'field' }, [labelA, nameA]);
-    var fieldB = el('label', { class: 'field' }, [el('span', { text: '집합 B 이름' }), nameB]);
+    var fieldB = el('label', { class: 'field' }, [el('span', { text: t('label_set_b_name') }), nameB]);
     var pairRow = el('div', { class: 'pair-fields' }, [fieldA, fieldB]);
     var itemsARow = el('label', { class: 'field textbox-field' }, [labelItemsA, itemsA]);
-    var itemsBRow = el('label', { class: 'field textbox-field' }, [el('span', { text: '집합 B 항목 (한 줄에 하나씩)' }), itemsB]);
+    var itemsBRow = el('label', { class: 'field textbox-field' }, [el('span', { text: t('label_set_b_items') }), itemsB]);
     var hint = el('p', { class: 'hint' });
 
     function syncVisibility() {
       var one = (vennState.mode || 'two') === 'one';
       modeBtn2.setAttribute('aria-pressed', one ? 'false' : 'true');
       modeBtn1.setAttribute('aria-pressed', one ? 'true' : 'false');
-      labelA.textContent = one ? '이름' : '집합 A 이름';
-      labelItemsA.textContent = one ? '항목 (한 줄에 하나씩)' : '집합 A 항목 (한 줄에 하나씩)';
+      labelA.textContent = one ? t('label_name_only') : t('label_set_a_name');
+      labelItemsA.textContent = one ? t('label_items_only') : t('label_set_a_items');
       fieldB.hidden = one;
       itemsBRow.hidden = one;
       pairRow.style.gridTemplateColumns = one ? '1fr' : '';
-      hint.textContent = one
-        ? '입력한 이름과 항목이 원 안에 가운데 정렬로 표시됩니다.'
-        : '두 목록에 같은 이름이 있으면 겹치는 부분(교집합)에 표시됩니다.';
+      hint.textContent = one ? t('hint_venn_one') : t('hint_venn_two');
     }
 
     function sync() {
@@ -6092,10 +6646,10 @@ window.SVGCanvas=exports;
     modeBtn2.addEventListener('click', function () { setMode('two'); });
     modeBtn1.addEventListener('click', function () { setMode('one'); });
 
-    nameA.addEventListener('input', function () { vennState.nameA = nameA.value; renderColorList(); updateChart(); });
-    nameB.addEventListener('input', function () { vennState.nameB = nameB.value; renderColorList(); updateChart(); });
-    itemsA.addEventListener('input', function () { vennState.itemsA = parseLines(itemsA.value); syncEmpty(); updateChart(); });
-    itemsB.addEventListener('input', function () { vennState.itemsB = parseLines(itemsB.value); syncEmpty(); updateChart(); });
+    nameA.addEventListener('input', function () { vennState.nameA = nameA.value; vennIsSample = false; renderColorList(); updateChart(); });
+    nameB.addEventListener('input', function () { vennState.nameB = nameB.value; vennIsSample = false; renderColorList(); updateChart(); });
+    itemsA.addEventListener('input', function () { vennState.itemsA = parseLines(itemsA.value); vennIsSample = false; syncEmpty(); updateChart(); });
+    itemsB.addEventListener('input', function () { vennState.itemsB = parseLines(itemsB.value); vennIsSample = false; syncEmpty(); updateChart(); });
 
     box.appendChild(el('div', { class: 'style-row' }, [modeSeg]));
     box.appendChild(pairRow);
@@ -6103,19 +6657,21 @@ window.SVGCanvas=exports;
     box.appendChild(itemsBRow);
     box.appendChild(hint);
 
-    var toolbar = el('div', { class: 'toolbar', role: 'group', 'aria-label': '벤 다이어그램 편집' });
-    var btnS = el('button', { type: 'button', class: 'btn btn-ghost', text: '예시 데이터' });
-    var btnC = el('button', { type: 'button', class: 'btn btn-ghost', text: '초기화' });
+    var toolbar = el('div', { class: 'toolbar', role: 'group', 'aria-label': t('aria_venn_edit') });
+    var btnS = el('button', { type: 'button', class: 'btn btn-ghost', text: t('btn_load_sample') });
+    var btnC = el('button', { type: 'button', class: 'btn btn-ghost', text: t('btn_clear_data') });
     btnS.addEventListener('click', function () {
       var m = vennState.mode || 'two';
-      vennState = clone(SAMPLE_VENN);
+      vennState = clone(sampleVenn());
       vennState.mode = m;
+      vennIsSample = true;
       sync(); renderColorList(); syncEmpty(); updateChart();
     });
     btnC.addEventListener('click', function () {
       var m = vennState.mode || 'two';
-      vennState = clone(BLANK_VENN);
+      vennState = clone(blankVenn());
       vennState.mode = m;
+      vennIsSample = false;
       sync(); renderColorList(); syncEmpty(); updateChart();
     });
     toolbar.appendChild(btnS);
@@ -6132,25 +6688,26 @@ window.SVGCanvas=exports;
 
     var ta = el('textarea', {
       id: 'timeline-text', rows: 12, class: 'textbox',
-      placeholder: '1914\n프란츠 페르디난트 대공이 암살당했다.\n\n1915\n영국에 첫 체펠린 비행선 공습이 있었다.'
+      placeholder: t('placeholder_timeline')
     });
 
     function sync() { ta.value = timelineToText(timelineState.events); }
 
     ta.addEventListener('input', function () {
       timelineState.events = parseTimelineText(ta.value);
+      timelineIsSample = false;
       syncEmpty();
       updateChart();
     });
 
-    box.appendChild(el('p', { class: 'hint', text: '빈 줄로 구간을 나눕니다. 각 구간의 첫 줄은 연도(또는 순서), 그 아래 줄들은 설명입니다.' }));
-    box.appendChild(el('label', { class: 'field textbox-field' }, [el('span', { text: '연표 내용' }), ta]));
+    box.appendChild(el('p', { class: 'hint', text: t('hint_timeline') }));
+    box.appendChild(el('label', { class: 'field textbox-field' }, [el('span', { text: t('label_timeline_content') }), ta]));
 
-    var toolbar = el('div', { class: 'toolbar', role: 'group', 'aria-label': '타임라인 편집' });
-    var btnS = el('button', { type: 'button', class: 'btn btn-ghost', text: '예시 데이터' });
-    var btnC = el('button', { type: 'button', class: 'btn btn-ghost', text: '초기화' });
-    btnS.addEventListener('click', function () { timelineState = clone(SAMPLE_TIMELINE); sync(); syncEmpty(); updateChart(); });
-    btnC.addEventListener('click', function () { timelineState = clone(BLANK_TIMELINE); sync(); syncEmpty(); updateChart(); });
+    var toolbar = el('div', { class: 'toolbar', role: 'group', 'aria-label': t('aria_timeline_edit') });
+    var btnS = el('button', { type: 'button', class: 'btn btn-ghost', text: t('btn_load_sample') });
+    var btnC = el('button', { type: 'button', class: 'btn btn-ghost', text: t('btn_clear_data') });
+    btnS.addEventListener('click', function () { timelineState = clone(sampleTimeline()); timelineIsSample = true; sync(); syncEmpty(); updateChart(); });
+    btnC.addEventListener('click', function () { timelineState = clone(BLANK_TIMELINE); timelineIsSample = false; sync(); syncEmpty(); updateChart(); });
     toolbar.appendChild(btnS);
     toolbar.appendChild(btnC);
     box.appendChild(toolbar);
@@ -6163,25 +6720,26 @@ window.SVGCanvas=exports;
     var box = flowDataBox;
     box.textContent = '';
 
-    var ta = el('textarea', { id: 'flow-text', rows: 8, class: 'textbox', placeholder: '요구사항 정리\n설계\n개발\n테스트\n배포' });
+    var ta = el('textarea', { id: 'flow-text', rows: 8, class: 'textbox', placeholder: t('placeholder_flow') });
 
     function sync() { ta.value = flowState.steps.join('\n'); }
 
     ta.addEventListener('input', function () {
       flowState.steps = parseLines(ta.value);
+      flowIsSample = false;
       renderColorList();
       syncEmpty();
       updateChart();
     });
 
-    box.appendChild(el('p', { class: 'hint', text: '한 줄에 한 단계씩 입력하세요. 화살표로 순서대로 이어 보여줍니다.' }));
-    box.appendChild(el('label', { class: 'field textbox-field' }, [el('span', { text: '단계 목록' }), ta]));
+    box.appendChild(el('p', { class: 'hint', text: t('hint_flow') }));
+    box.appendChild(el('label', { class: 'field textbox-field' }, [el('span', { text: t('label_flow_steps') }), ta]));
 
-    var toolbar = el('div', { class: 'toolbar', role: 'group', 'aria-label': '순서도 편집' });
-    var btnS = el('button', { type: 'button', class: 'btn btn-ghost', text: '예시 데이터' });
-    var btnC = el('button', { type: 'button', class: 'btn btn-ghost', text: '초기화' });
-    btnS.addEventListener('click', function () { flowState = clone(SAMPLE_FLOW); sync(); renderColorList(); syncEmpty(); updateChart(); });
-    btnC.addEventListener('click', function () { flowState = clone(BLANK_FLOW); sync(); renderColorList(); syncEmpty(); updateChart(); });
+    var toolbar = el('div', { class: 'toolbar', role: 'group', 'aria-label': t('aria_flow_edit') });
+    var btnS = el('button', { type: 'button', class: 'btn btn-ghost', text: t('btn_load_sample') });
+    var btnC = el('button', { type: 'button', class: 'btn btn-ghost', text: t('btn_clear_data') });
+    btnS.addEventListener('click', function () { flowState = clone(sampleFlow()); flowIsSample = true; sync(); renderColorList(); syncEmpty(); updateChart(); });
+    btnC.addEventListener('click', function () { flowState = clone(BLANK_FLOW); flowIsSample = false; sync(); renderColorList(); syncEmpty(); updateChart(); });
     toolbar.appendChild(btnS);
     toolbar.appendChild(btnC);
     box.appendChild(toolbar);
@@ -6196,20 +6754,24 @@ window.SVGCanvas=exports;
 
     var centerTitle = el('input', { type: 'text', id: 'hub-center-title' });
     var centerSub = el('input', { type: 'text', id: 'hub-center-sub' });
-    var items = el('textarea', { id: 'hub-items', rows: 7, class: 'textbox', placeholder: 'KBS+\nKONG\n뉴스\n지역\n재난\n아카이브' });
+    var items = el('textarea', { id: 'hub-items', rows: 7, class: 'textbox', placeholder: t('placeholder_hub_items') });
 
     var pairRow = el('div', { class: 'pair-fields' }, [
-      el('label', { class: 'field' }, [el('span', { text: '가운데 원 이름' }), centerTitle]),
-      el('label', { class: 'field' }, [el('span', { text: '가운데 원 부제 (선택)' }), centerSub])
+      el('label', { class: 'field' }, [el('span', { text: t('label_hub_center_title') }), centerTitle]),
+      el('label', { class: 'field' }, [el('span', { text: t('label_hub_center_sub') }), centerSub])
     ]);
-    var itemsRow = el('label', { class: 'field textbox-field' }, [el('span', { text: '바깥 원 항목 (한 줄에 하나씩)' }), items]);
+    var itemsRow = el('label', { class: 'field textbox-field' }, [el('span', { text: t('label_hub_items') }), items]);
     var hint = el('p', { class: 'hint' });
 
     function updateHint() {
       var n = parseLines(items.value).length;
       hint.textContent = n > 6
-        ? '바깥 원은 최대 6개까지 표시됩니다. 입력한 ' + n + '개 중 처음 6개만 그려집니다.'
-        : '바깥 원은 최대 6개까지 입력할 수 있습니다. 항목을 추가하면 가운데 원과 이어 주는 연결선이 함께 나타납니다.';
+        ? (currentLang === 'en'
+            ? 'Only up to 6 outer circles are shown. Of the ' + n + ' entered, only the first 6 are drawn.'
+            : '바깥 원은 최대 6개까지 표시됩니다. 입력한 ' + n + '개 중 처음 6개만 그려집니다.')
+        : (currentLang === 'en'
+            ? 'Up to 6 outer circles can be entered. Adding an item also draws a connecting line to the center circle.'
+            : '바깥 원은 최대 6개까지 입력할 수 있습니다. 항목을 추가하면 가운데 원과 이어 주는 연결선이 함께 나타납니다.');
     }
 
     function sync() {
@@ -6221,13 +6783,15 @@ window.SVGCanvas=exports;
 
     centerTitle.addEventListener('input', function () {
       hubState.centerTitle = centerTitle.value;
+      hubIsSample = false;
       renderColorList();
       syncEmpty();
       updateChart();
     });
-    centerSub.addEventListener('input', function () { hubState.centerSub = centerSub.value; updateChart(); });
+    centerSub.addEventListener('input', function () { hubState.centerSub = centerSub.value; hubIsSample = false; updateChart(); });
     items.addEventListener('input', function () {
       hubState.items = parseLines(items.value);
+      hubIsSample = false;
       updateHint();
       renderColorList();
       syncEmpty();
@@ -6238,11 +6802,11 @@ window.SVGCanvas=exports;
     box.appendChild(itemsRow);
     box.appendChild(hint);
 
-    var toolbar = el('div', { class: 'toolbar', role: 'group', 'aria-label': '허브 다이어그램 편집' });
-    var btnS = el('button', { type: 'button', class: 'btn btn-ghost', text: '예시 데이터' });
-    var btnC = el('button', { type: 'button', class: 'btn btn-ghost', text: '초기화' });
-    btnS.addEventListener('click', function () { hubState = clone(SAMPLE_HUB); sync(); renderColorList(); syncEmpty(); updateChart(); });
-    btnC.addEventListener('click', function () { hubState = clone(BLANK_HUB); sync(); renderColorList(); syncEmpty(); updateChart(); });
+    var toolbar = el('div', { class: 'toolbar', role: 'group', 'aria-label': t('aria_hub_edit') });
+    var btnS = el('button', { type: 'button', class: 'btn btn-ghost', text: t('btn_load_sample') });
+    var btnC = el('button', { type: 'button', class: 'btn btn-ghost', text: t('btn_clear_data') });
+    btnS.addEventListener('click', function () { hubState = clone(sampleHub()); hubIsSample = true; sync(); renderColorList(); syncEmpty(); updateChart(); });
+    btnC.addEventListener('click', function () { hubState = clone(blankHub()); hubIsSample = false; sync(); renderColorList(); syncEmpty(); updateChart(); });
     toolbar.appendChild(btnS);
     toolbar.appendChild(btnC);
     box.appendChild(toolbar);
@@ -6250,8 +6814,115 @@ window.SVGCanvas=exports;
     sync();
   }
 
+  // ---------- 화면 언어 전환 (한국어 ↔ English) ----------
+  // index.html에 미리 id를 붙여 둔 "고정 글자" 요소들입니다. 여기 적힌 글자만 사전(I18N)에서
+  // 다시 읽어 와 바꿔 주고, 사용자가 입력한 데이터(표 값·제목·단위 등)는 절대 건드리지 않습니다.
+  var STATIC_TEXT_IDS = {
+    'app-title': 'app_title',
+    'app-subtitle': 'app_subtitle',
+    'tab-type': 'tab_type',
+    'tab-data': 'tab_data',
+    'tab-style': 'tab_style',
+    'tab-export': 'tab_export',
+    'heading-type': 'tab_type',
+    'heading-data': 'tab_data',
+    'heading-style': 'tab_style',
+    'heading-export': 'tab_export',
+    'label-chart-title': 'field_chart_title',
+    'label-chart-unit': 'field_chart_unit',
+    'add-row': 'btn_add_row',
+    'add-series': 'btn_add_series',
+    'transpose': 'btn_transpose',
+    'load-sample': 'btn_load_sample',
+    'clear-data': 'btn_clear_data',
+    'data-hint': 'data_hint',
+    'paste-heading': 'paste_heading',
+    'paste-hint': 'paste_hint',
+    'apply-paste': 'btn_apply_paste',
+    'show-as-text': 'btn_show_as_text',
+    'clear-paste': 'btn_clear_paste',
+    'preview-heading-text': 'label_preview',
+    'quick-export': 'tab_export'
+  };
+  var STATIC_PLACEHOLDER_IDS = {
+    'chart-title': 'placeholder_chart_title',
+    'chart-unit': 'placeholder_chart_unit',
+    'paste-text': 'paste_placeholder'
+  };
+  var STATIC_ARIA_IDS = {
+    'main-tablist': 'tablist_aria',
+    'table-toolbar': 'table_toolbar_aria',
+    'data-table': 'table_aria'
+  };
+
+  function applyStaticI18n() {
+    document.documentElement.lang = currentLang;
+    Object.keys(STATIC_TEXT_IDS).forEach(function (id) {
+      var el2 = document.getElementById(id);
+      if (el2) el2.textContent = t(STATIC_TEXT_IDS[id]);
+    });
+    Object.keys(STATIC_PLACEHOLDER_IDS).forEach(function (id) {
+      var el2 = document.getElementById(id);
+      if (el2) el2.setAttribute('placeholder', t(STATIC_PLACEHOLDER_IDS[id]));
+    });
+    Object.keys(STATIC_ARIA_IDS).forEach(function (id) {
+      var el2 = document.getElementById(id);
+      if (el2) el2.setAttribute('aria-label', t(STATIC_ARIA_IDS[id]));
+    });
+    if (fullViewBtn) fullViewBtn.textContent = fullView ? t('fullview_off') : t('fullview_on');
+    var langBtn = document.getElementById('toggle-lang');
+    if (langBtn) {
+      langBtn.textContent = currentLang === 'ko' ? t('lang_switch_to_en') : t('lang_switch_to_ko');
+      langBtn.setAttribute('aria-pressed', currentLang === 'en' ? 'true' : 'false');
+    }
+  }
+
+  // 언어를 바꾸고, 고정 글자뿐 아니라 "그래프 종류" 카드·표 머리글·스타일/내보내기 탭처럼
+  // 화면 언어에 맞춰 직접 그리는 부분들도 전부 다시 그립니다. 사용자가 입력한 데이터는 그대로 둡니다.
+  function setLang(lang) {
+    if (lang !== 'ko' && lang !== 'en') return;
+    if (lang === currentLang) return;
+    currentLang = lang;
+    // 그래프 제목·단위가 아직 예시 값 그대로라면(직접 고치지 않았다면) 그 언어의 예시 값으로 바꿔 줍니다.
+    // 사용자가 직접 입력한 제목·단위는 metaIsSample이 false가 되어 있어 이 경우 건드리지 않습니다.
+    if (metaIsSample) setMeta(sampleTitle(), sampleUnit(), true);
+    // 표·벤 다이어그램·타임라인·순서도·허브 역시, 아직 예시 내용 그대로일 때만(각 ...IsSample 플래그)
+    // 그 언어의 예시 내용으로 바꿔 줍니다. 사용자가 직접 고친 내용은 각 플래그가 false가 되어 있어 건드리지 않습니다.
+    if (dataIsSample) { state = clone(sampleData()); resetColors(); }
+    if (vennIsSample) {
+      var vMode = vennState.mode || 'two';
+      vennState = clone(sampleVenn());
+      vennState.mode = vMode;
+    }
+    if (timelineIsSample) { timelineState = clone(sampleTimeline()); }
+    if (flowIsSample) { flowState = clone(sampleFlow()); }
+    if (hubIsSample) { hubState = clone(sampleHub()); }
+    applyStaticI18n();
+    buildTypeCards();
+    syncTypeCards();
+    renderTypeOptions();
+    renderTable();
+    buildStylePane();
+    buildExportPane();
+    buildVennPane();
+    buildTimelinePane();
+    buildFlowPane();
+    buildHubPane();
+    syncDataVisibility();
+    syncEmpty();
+    createChart();
+  }
+
+  var langToggleBtn = document.getElementById('toggle-lang');
+  if (langToggleBtn) {
+    langToggleBtn.addEventListener('click', function () {
+      setLang(currentLang === 'ko' ? 'en' : 'ko');
+    });
+  }
+
   // ---------- 시작 ----------
-  setMeta(SAMPLE_TITLE, SAMPLE_UNIT, true);
+  setMeta(sampleTitle(), sampleUnit(), true);
+  applyStaticI18n();
   buildTypeCards();
   syncTypeCards();
   buildStylePane();
